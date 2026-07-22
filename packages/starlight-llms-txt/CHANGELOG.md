@@ -4,55 +4,55 @@
 
 ### Patch Changes
 
-- [#195](https://github.com/f5xc-salesdemos/starlight-llms-txt/pull/195) [`5b734d4`](https://github.com/f5xc-salesdemos/starlight-llms-txt/commit/5b734d4affd4e288238703f774f1215c7197847d) Thanks [@robinmordasiewicz](https://github.com/robinmordasiewicz)! - Widen `peerDependencies.astro` from `^6.0.0` to `>=6.0.0` so consumers can use astro 7+.
+- [#195](https://github.com/f5-sales-demo/starlight-llms-txt/pull/195) [`5b734d4`](https://github.com/f5-sales-demo/starlight-llms-txt/commit/5b734d4affd4e288238703f774f1215c7197847d) Thanks [@robinmordasiewicz](https://github.com/robinmordasiewicz)! - Widen `peerDependencies.astro` from `^6.0.0` to `>=6.0.0` so consumers can use astro 7+.
 
 ## 1.3.0
 
 ### Minor Changes
 
-- [#41](https://github.com/f5xc-salesdemos/starlight-llms-txt/pull/41) [`193dd0d`](https://github.com/f5xc-salesdemos/starlight-llms-txt/commit/193dd0d1bc4b8870a40f7fdf4fbf5435b04fba96) Thanks [@robinmordasiewicz](https://github.com/robinmordasiewicz)! - Add auto-tiered `.txt` hierarchy for progressive AI discovery. Every hint link in `llms.txt` now points to a `.txt` file. Content lives only at leaf nodes; intermediate tiers contain metadata hints. Replaces `customSets` and `perPageMarkdown` with a single `tieredHierarchy` option (enabled by default).
+- [#41](https://github.com/f5-sales-demo/starlight-llms-txt/pull/41) [`193dd0d`](https://github.com/f5-sales-demo/starlight-llms-txt/commit/193dd0d1bc4b8870a40f7fdf4fbf5435b04fba96) Thanks [@robinmordasiewicz](https://github.com/robinmordasiewicz)! - Add auto-tiered `.txt` hierarchy for progressive AI discovery. Every hint link in `llms.txt` now points to a `.txt` file. Content lives only at leaf nodes; intermediate tiers contain metadata hints. Replaces `customSets` and `perPageMarkdown` with a single `tieredHierarchy` option (enabled by default).
 
 ## 1.2.2
 
 ### Patch Changes
 
-- [#30](https://github.com/f5xc-salesdemos/starlight-llms-txt/pull/30) [`a4e3c1c`](https://github.com/f5xc-salesdemos/starlight-llms-txt/commit/a4e3c1c5b9135f7b311733e6982a5e7ae0ff49e0) Thanks [@robinmordasiewicz](https://github.com/robinmordasiewicz)! - Deduplicate Sections entries when a node matches a custom set — prevents duplicate Guides/Functions lines in the llms.txt output for subcategory-aware sites.
+- [#30](https://github.com/f5-sales-demo/starlight-llms-txt/pull/30) [`a4e3c1c`](https://github.com/f5-sales-demo/starlight-llms-txt/commit/a4e3c1c5b9135f7b311733e6982a5e7ae0ff49e0) Thanks [@robinmordasiewicz](https://github.com/robinmordasiewicz)! - Deduplicate Sections entries when a node matches a custom set — prevents duplicate Guides/Functions lines in the llms.txt output for subcategory-aware sites.
 
 ## 1.2.1
 
 ### Patch Changes
 
-- [#25](https://github.com/f5xc-salesdemos/starlight-llms-txt/pull/25) [`068535a`](https://github.com/f5xc-salesdemos/starlight-llms-txt/commit/068535ab4d725cc0c9095f0162031c306a0675a3) Thanks [@robinmordasiewicz](https://github.com/robinmordasiewicz)! - Make ## Sections link to custom set \_llms-txt/\*.txt files instead of individual page URLs when a section node matches a custom set label. When sidebarNav is enabled, custom sets are moved from Documentation Sets into Sections to avoid duplication.
+- [#25](https://github.com/f5-sales-demo/starlight-llms-txt/pull/25) [`068535a`](https://github.com/f5-sales-demo/starlight-llms-txt/commit/068535ab4d725cc0c9095f0162031c306a0675a3) Thanks [@robinmordasiewicz](https://github.com/robinmordasiewicz)! - Make ## Sections link to custom set \_llms-txt/\*.txt files instead of individual page URLs when a section node matches a custom set label. When sidebarNav is enabled, custom sets are moved from Documentation Sets into Sections to avoid duplication.
 
 ## 1.2.0
 
 ### Minor Changes
 
-- [#18](https://github.com/f5xc-salesdemos/starlight-llms-txt/pull/18) [`f850ddd`](https://github.com/f5xc-salesdemos/starlight-llms-txt/commit/f850dddf7f7791c11ac15c0d1dfc379bb4262351) Thanks [@robinmordasiewicz](https://github.com/robinmordasiewicz)! - Add subcategory-aware grouping to section tree and auto-generate custom sets from frontmatter
+- [#18](https://github.com/f5-sales-demo/starlight-llms-txt/pull/18) [`f850ddd`](https://github.com/f5-sales-demo/starlight-llms-txt/commit/f850dddf7f7791c11ac15c0d1dfc379bb4262351) Thanks [@robinmordasiewicz](https://github.com/robinmordasiewicz)! - Add subcategory-aware grouping to section tree and auto-generate custom sets from frontmatter
 
 ## 1.1.0
 
 ### Minor Changes
 
-- [#3](https://github.com/f5xc-salesdemos/starlight-llms-txt/pull/3) [`c59c96d`](https://github.com/f5xc-salesdemos/starlight-llms-txt/commit/c59c96d3a3569552c3b70dec2cbf253d2bc9ccaa) Thanks [@robinmordasiewicz](https://github.com/robinmordasiewicz)! - Add categorized federation support. Federated sites can now be grouped by category with optional section headings and descriptions. Fully backwards-compatible — when no categories are defined, rendering is unchanged.
+- [#3](https://github.com/f5-sales-demo/starlight-llms-txt/pull/3) [`c59c96d`](https://github.com/f5-sales-demo/starlight-llms-txt/commit/c59c96d3a3569552c3b70dec2cbf253d2bc9ccaa) Thanks [@robinmordasiewicz](https://github.com/robinmordasiewicz)! - Add categorized federation support. Federated sites can now be grouped by category with optional section headings and descriptions. Fully backwards-compatible — when no categories are defined, rendering is unchanged.
 
 ## 1.0.0
 
 ### Major Changes
 
-- [#1](https://github.com/f5xc-salesdemos/starlight-llms-txt/pull/1) [`9ef7e93`](https://github.com/f5xc-salesdemos/starlight-llms-txt/commit/9ef7e93d1685e1d5ccc0dd43f0b4de6dded1522f) Thanks [@robinmordasiewicz](https://github.com/robinmordasiewicz)! - Initial release of the F5 XC Sales Demos fork, derived from `starlight-llms-txt@0.8.1`. Adds:
+- [#1](https://github.com/f5-sales-demo/starlight-llms-txt/pull/1) [`9ef7e93`](https://github.com/f5-sales-demo/starlight-llms-txt/commit/9ef7e93d1685e1d5ccc0dd43f0b4de6dded1522f) Thanks [@robinmordasiewicz](https://github.com/robinmordasiewicz)! - Initial release of the F5 XC Sales Demos fork, derived from `starlight-llms-txt@0.8.1`. Adds:
 
   - `perPageMarkdown` — per-page `.md` endpoints (Tier 4 routing in the xcsh#223 cascading knowledge hierarchy). Rebased from [delucis#32](https://github.com/delucis/starlight-llms-txt/pull/32) by Matthias Vallentin, with `excludePages` extended to accept glob patterns.
   - `sidebarNav` — sidebar hierarchy in `llms.txt` (Tier 2 routing), with frontmatter descriptions inlined automatically.
   - `federatedSites` — cross-repo links block in `llms.txt` (Tier 1 routing).
 
-  The `starlight-llms-txt` package is authored by Chris Swithinbank (delucis). This fork exists to ship features needed by the f5xc-salesdemos documentation federation; we intend to upstream compatible features once they have been validated in production.
+  The `starlight-llms-txt` package is authored by Chris Swithinbank (delucis). This fork exists to ship features needed by the f5-sales-demo documentation federation; we intend to upstream compatible features once they have been validated in production.
 
 ### Minor Changes
 
-- [#1](https://github.com/f5xc-salesdemos/starlight-llms-txt/pull/1) [`940de8c`](https://github.com/f5xc-salesdemos/starlight-llms-txt/commit/940de8ce11bd6d7124b6e41708c991adc576dc59) Thanks [@robinmordasiewicz](https://github.com/robinmordasiewicz)! - Add `federatedSites` option. When set to a non-empty array, the plugin includes a `## Federated Sites` block in `llms.txt` listing links to other sites' `llms.txt` entry points. Intended for docs portals that federate out to product-specific documentation.
+- [#1](https://github.com/f5-sales-demo/starlight-llms-txt/pull/1) [`940de8c`](https://github.com/f5-sales-demo/starlight-llms-txt/commit/940de8ce11bd6d7124b6e41708c991adc576dc59) Thanks [@robinmordasiewicz](https://github.com/robinmordasiewicz)! - Add `federatedSites` option. When set to a non-empty array, the plugin includes a `## Federated Sites` block in `llms.txt` listing links to other sites' `llms.txt` entry points. Intended for docs portals that federate out to product-specific documentation.
 
-- [#1](https://github.com/f5xc-salesdemos/starlight-llms-txt/pull/1) [`a8e692c`](https://github.com/f5xc-salesdemos/starlight-llms-txt/commit/a8e692c82c96bbfe36d3fc993d2fca4d0d5dc74e) Thanks [@robinmordasiewicz](https://github.com/robinmordasiewicz)! - Add individual Markdown file generation for each documentation page
+- [#1](https://github.com/f5-sales-demo/starlight-llms-txt/pull/1) [`a8e692c`](https://github.com/f5-sales-demo/starlight-llms-txt/commit/a8e692c82c96bbfe36d3fc993d2fca4d0d5dc74e) Thanks [@robinmordasiewicz](https://github.com/robinmordasiewicz)! - Add individual Markdown file generation for each documentation page
 
   Implements the second part of the llmstxt.org standard proposal by generating clean Markdown versions of each documentation page. These individual `.md` files are accessible at the same URL path with `.md` appended, allowing LLMs to fetch specific documentation pages on-demand.
 
@@ -62,7 +62,7 @@
     - `extensionStrategy`: Control URL pattern - `'append'` or `'replace'` (default: `'append'`)
     - `excludePages`: Exclude specific pages from .md generation (default: `['404']`)
 
-- [#1](https://github.com/f5xc-salesdemos/starlight-llms-txt/pull/1) [`46d0562`](https://github.com/f5xc-salesdemos/starlight-llms-txt/commit/46d0562410dd4ddea05fd6f3b9b4bfb732253891) Thanks [@robinmordasiewicz](https://github.com/robinmordasiewicz)! - Add `sidebarNav` option. When enabled, the plugin includes a `## Sections` block in `llms.txt` with the site's pages grouped hierarchically. Entries include frontmatter descriptions inline when present.
+- [#1](https://github.com/f5-sales-demo/starlight-llms-txt/pull/1) [`46d0562`](https://github.com/f5-sales-demo/starlight-llms-txt/commit/46d0562410dd4ddea05fd6f3b9b4bfb732253891) Thanks [@robinmordasiewicz](https://github.com/robinmordasiewicz)! - Add `sidebarNav` option. When enabled, the plugin includes a `## Sections` block in `llms.txt` with the site's pages grouped hierarchically. Entries include frontmatter descriptions inline when present.
 
 ## 0.8.1
 
