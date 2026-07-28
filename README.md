@@ -20,7 +20,6 @@
 
 Generate llms.txt files to train large language models on your Starlight documentation site
 
-
 ## Documentation
 
 Full documentation is available at **[https://f5-sales-demo.github.io/starlight-llms-txt/](https://f5-sales-demo.github.io/starlight-llms-txt/)**.
