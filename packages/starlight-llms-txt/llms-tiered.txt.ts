@@ -4,7 +4,6 @@ import type { APIRoute, GetStaticPaths, InferGetStaticParamsType, InferGetStatic
 import { entryToSimpleMarkdown } from './entryToSimpleMarkdown';
 import { buildTierTree, type DirectoryNode, getAllTierPaths, type LeafNode } from './tier-tree';
 import { renderDirectoryIndex, renderLeafContent } from './tier-tree-render';
-import { isDefaultLocale } from './utils';
 
 export const prerender = true;
 
@@ -12,7 +11,10 @@ let cachedTree: DirectoryNode | undefined;
 
 async function getTree(): Promise<DirectoryNode> {
   if (cachedTree) return cachedTree;
-  const docs = await getCollection('docs', (doc) => isDefaultLocale(doc) && !doc.data.draft);
+  // Every locale, not just the default: document ids carry the locale in their
+  // first path segment, so the top tier of the tree becomes a language
+  // selector and each language gets the full depth of tiers below it.
+  const docs = await getCollection('docs', (doc) => !doc.data.draft);
   cachedTree = buildTierTree(docs, {
     promote: starlightLllmsTxtContext.promote,
     demote: starlightLllmsTxtContext.demote,
