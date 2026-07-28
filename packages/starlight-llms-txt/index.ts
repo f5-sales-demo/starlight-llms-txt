@@ -34,6 +34,11 @@ export default function starlightLlmsTxt(opts: StarlightLllmsTextOptions = {}): 
               });
 
               injectRoute({
+                entrypoint: new URL('./llms-locale.txt.ts', import.meta.url),
+                pattern: '/[locale]/llms.txt',
+                prerender: true,
+              });
+              injectRoute({
                 entrypoint: new URL('./llms-locale-full.txt.ts', import.meta.url),
                 pattern: '/[locale]/llms-full.txt',
                 prerender: true,

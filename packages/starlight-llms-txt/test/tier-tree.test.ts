@@ -168,4 +168,37 @@ describe('getAllTierPaths', () => {
     expect(paths).toContainEqual({ path: 'a/b/c', type: 'directory' });
     expect(paths).toContainEqual({ path: 'a/b/c/page', type: 'leaf' });
   });
+
+  it('covers every locale when documents from several locales are supplied', () => {
+    const tree = buildTierTree([
+      doc('en/index', { title: 'Home' }),
+      doc('en/demo/index', { title: 'Demo' }),
+      doc('en/demo/deploy', { title: 'Deploy' }),
+      doc('ja/index', { title: 'ホーム' }),
+      doc('ja/demo/index', { title: 'デモ' }),
+      doc('ja/demo/deploy', { title: 'デプロイ' }),
+    ]);
+
+    expect([...tree.children.keys()]).toEqual(['en', 'ja']);
+
+    const paths = getAllTierPaths(tree);
+    for (const locale of ['en', 'ja']) {
+      expect(paths).toContainEqual({ path: locale, type: 'directory' });
+      expect(paths).toContainEqual({ path: `${locale}/demo`, type: 'directory' });
+      expect(paths).toContainEqual({ path: `${locale}/demo/deploy`, type: 'leaf' });
+    }
+  });
+
+  it('keeps each locale’s titles and descriptions on its own subtree', () => {
+    const tree = buildTierTree([
+      doc('en/demo/index', { title: 'Demo', description: 'English summary' }),
+      doc('ja/demo/index', { title: 'デモ', description: '日本語の要約' }),
+    ]);
+
+    const en = tree.children.get('en');
+    const ja = tree.children.get('ja');
+    if (en?.type !== 'directory' || ja?.type !== 'directory') throw new Error('expected directories');
+    expect(en.children.get('demo')?.meta).toEqual({ title: 'Demo', description: 'English summary' });
+    expect(ja.children.get('demo')?.meta).toEqual({ title: 'デモ', description: '日本語の要約' });
+  });
 });
