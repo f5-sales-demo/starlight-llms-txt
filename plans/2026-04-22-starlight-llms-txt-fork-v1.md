@@ -47,7 +47,7 @@
 | `packages/starlight-llms-txt/index.ts` | Pass new options into `projectContext`; inject per-page markdown route when enabled |
 | `packages/starlight-llms-txt/llms.txt.ts` | Render `## Sections` and `## Federated Sites` blocks |
 | `packages/starlight-llms-txt/entryToSimpleMarkdown.ts` | Share helper with `page-markdown-generator.ts` (from delucis#32) |
-| `docs/astro.config.ts` | Enable `sidebarNav: true` and `perPageMarkdown: true` for dogfooding; update site URL / github links |
+| `docs/astro.config.ts` | Enable `sidebarNav: true` and `perPageMarkdown: true` for dogfooding; update site URL / GitHub links |
 | `docs/src/content/docs/configuration.mdx` | User-facing docs for new options |
 
 ### Modified files (fork-only)
@@ -71,6 +71,7 @@
 **Phase A of the spec.** Lay the test-running foundation before writing any features. No consumer-visible change.
 
 **Files:**
+
 - Create: `packages/starlight-llms-txt/vitest.config.ts`
 - Create: `packages/starlight-llms-txt/test/sanity.test.ts`
 - Modify: `packages/starlight-llms-txt/package.json` (add `vitest` devDep + scripts)
@@ -85,9 +86,9 @@ Write `packages/starlight-llms-txt/vitest.config.ts`:
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
-	test: {
-		include: ['test/**/*.test.ts'],
-	},
+ test: {
+  include: ['test/**/*.test.ts'],
+ },
 });
 ```
 
@@ -99,9 +100,9 @@ Write `packages/starlight-llms-txt/test/sanity.test.ts`:
 import { describe, it, expect } from 'vitest';
 
 describe('vitest harness', () => {
-	it('runs', () => {
-		expect(1 + 1).toBe(2);
-	});
+ it('runs', () => {
+  expect(1 + 1).toBe(2);
+ });
 });
 ```
 
@@ -143,17 +144,21 @@ Note: filter uses the pre-rename name `starlight-llms-txt`. Task 13 updates this
 - [ ] **Step 1.5: Install the new dev dependency**
 
 Run:
+
 ```bash
 pnpm install
 ```
+
 Expected: resolves `vitest@^3.2.0`, writes `pnpm-lock.yaml` update.
 
 - [ ] **Step 1.6: Run the sanity test locally**
 
 Run:
+
 ```bash
 pnpm test
 ```
+
 Expected: `Test Files  1 passed (1)`, `Tests  1 passed (1)`.
 
 - [ ] **Step 1.7: Add CI test job**
@@ -197,9 +202,11 @@ jobs:
 - [ ] **Step 1.8: Verify the CI YAML**
 
 Run:
+
 ```bash
 python3 -c "import yaml, sys; yaml.safe_load(open('.github/workflows/ci.yml'))" && echo OK
 ```
+
 Expected: `OK`.
 
 - [ ] **Step 1.9: Commit**
@@ -232,6 +239,7 @@ EOF
 **Phase B1 of the spec, part 1 of 2.** Pure helper that groups a collection of docs into a two-level section tree. Upstream-candidate.
 
 **Files:**
+
 - Create: `packages/starlight-llms-txt/test/sidebar-nav.test.ts`
 - Create: `packages/starlight-llms-txt/sidebar-nav.ts`
 
@@ -244,105 +252,107 @@ import { describe, it, expect } from 'vitest';
 import { buildSectionTree } from '../sidebar-nav';
 
 type DocFixture = {
-	id: string;
-	data: {
-		title: string;
-		description?: string;
-		draft?: boolean;
-		sidebar?: { order?: number };
-	};
+ id: string;
+ data: {
+  title: string;
+  description?: string;
+  draft?: boolean;
+  sidebar?: { order?: number };
+ };
 };
 
 const doc = (id: string, overrides: Partial<DocFixture['data']> = {}): DocFixture => ({
-	id,
-	data: { title: id, ...overrides },
+ id,
+ data: { title: id, ...overrides },
 });
 
 describe('buildSectionTree', () => {
-	it('returns empty array for empty input', () => {
-		expect(buildSectionTree([])).toEqual([]);
-	});
+ it('returns empty array for empty input', () => {
+  expect(buildSectionTree([])).toEqual([]);
+ });
 
-	it('excludes root index from the tree', () => {
-		const tree = buildSectionTree([doc('index'), doc('overview')]);
-		expect(tree).toHaveLength(1);
-		expect(tree[0]?.slug).toBe('overview');
-	});
+ it('excludes root index from the tree', () => {
+  const tree = buildSectionTree([doc('index'), doc('overview')]);
+  expect(tree).toHaveLength(1);
+  expect(tree[0]?.slug).toBe('overview');
+ });
 
-	it('excludes draft pages', () => {
-		const tree = buildSectionTree([doc('overview'), doc('secret', { draft: true })]);
-		expect(tree).toHaveLength(1);
-		expect(tree[0]?.slug).toBe('overview');
-	});
+ it('excludes draft pages', () => {
+  const tree = buildSectionTree([doc('overview'), doc('secret', { draft: true })]);
+  expect(tree).toHaveLength(1);
+  expect(tree[0]?.slug).toBe('overview');
+ });
 
-	it('produces a flat tree for top-level pages in title order', () => {
-		const tree = buildSectionTree([
-			doc('configuration', { title: 'Configuration' }),
-			doc('getting-started', { title: 'Getting Started' }),
-		]);
-		expect(tree.map((n) => n.title)).toEqual(['Configuration', 'Getting Started']);
-		expect(tree.every((n) => n.children.length === 0)).toBe(true);
-	});
+ it('produces a flat tree for top-level pages in title order', () => {
+  const tree = buildSectionTree([
+   doc('configuration', { title: 'Configuration' }),
+   doc('getting-started', { title: 'Getting Started' }),
+  ]);
+  expect(tree.map((n) => n.title)).toEqual(['Configuration', 'Getting Started']);
+  expect(tree.every((n) => n.children.length === 0)).toBe(true);
+ });
 
-	it('honors sidebar.order over title order', () => {
-		const tree = buildSectionTree([
-			doc('b', { title: 'B', sidebar: { order: 2 } }),
-			doc('a', { title: 'A', sidebar: { order: 1 } }),
-		]);
-		expect(tree.map((n) => n.slug)).toEqual(['a', 'b']);
-	});
+ it('honors sidebar.order over title order', () => {
+  const tree = buildSectionTree([
+   doc('b', { title: 'B', sidebar: { order: 2 } }),
+   doc('a', { title: 'A', sidebar: { order: 1 } }),
+  ]);
+  expect(tree.map((n) => n.slug)).toEqual(['a', 'b']);
+ });
 
-	it('groups nested ids under a synthetic title-cased parent when no index page exists', () => {
-		const tree = buildSectionTree([
-			doc('demo/phase-1-build', { title: 'Phase 1 — Build' }),
-			doc('demo/phase-2-attack', { title: 'Phase 2 — Attack' }),
-		]);
-		expect(tree).toHaveLength(1);
-		expect(tree[0]?.title).toBe('Demo');
-		expect(tree[0]?.slug).toBeUndefined();
-		expect(tree[0]?.children.map((c) => c.title)).toEqual([
-			'Phase 1 — Build',
-			'Phase 2 — Attack',
-		]);
-	});
+ it('groups nested ids under a synthetic title-cased parent when no index page exists', () => {
+  const tree = buildSectionTree([
+   doc('demo/phase-1-build', { title: 'Phase 1 — Build' }),
+   doc('demo/phase-2-attack', { title: 'Phase 2 — Attack' }),
+  ]);
+  expect(tree).toHaveLength(1);
+  expect(tree[0]?.title).toBe('Demo');
+  expect(tree[0]?.slug).toBeUndefined();
+  expect(tree[0]?.children.map((c) => c.title)).toEqual([
+   'Phase 1 — Build',
+   'Phase 2 — Attack',
+  ]);
+ });
 
-	it('upgrades a group with data from its index page when present', () => {
-		const tree = buildSectionTree([
-			doc('demo/index', { title: 'Demo', description: '4-phase demo exercise' }),
-			doc('demo/phase-1-build', { title: 'Phase 1 — Build' }),
-		]);
-		expect(tree).toHaveLength(1);
-		expect(tree[0]?.title).toBe('Demo');
-		expect(tree[0]?.description).toBe('4-phase demo exercise');
-		expect(tree[0]?.slug).toBe('demo');
-		expect(tree[0]?.children).toHaveLength(1);
-		expect(tree[0]?.children[0]?.slug).toBe('demo/phase-1-build');
-	});
+ it('upgrades a group with data from its index page when present', () => {
+  const tree = buildSectionTree([
+   doc('demo/index', { title: 'Demo', description: '4-phase demo exercise' }),
+   doc('demo/phase-1-build', { title: 'Phase 1 — Build' }),
+  ]);
+  expect(tree).toHaveLength(1);
+  expect(tree[0]?.title).toBe('Demo');
+  expect(tree[0]?.description).toBe('4-phase demo exercise');
+  expect(tree[0]?.slug).toBe('demo');
+  expect(tree[0]?.children).toHaveLength(1);
+  expect(tree[0]?.children[0]?.slug).toBe('demo/phase-1-build');
+ });
 
-	it('propagates per-doc description into leaf nodes', () => {
-		const tree = buildSectionTree([
-			doc('overview', { title: 'Overview', description: 'Product overview' }),
-		]);
-		expect(tree[0]?.description).toBe('Product overview');
-	});
+ it('propagates per-doc description into leaf nodes', () => {
+  const tree = buildSectionTree([
+   doc('overview', { title: 'Overview', description: 'Product overview' }),
+  ]);
+  expect(tree[0]?.description).toBe('Product overview');
+ });
 
-	it('applies promote/demote to top-level sort order', () => {
-		const tree = buildSectionTree(
-			[doc('zeta'), doc('alpha'), doc('references')],
-			['zeta*'], // promote
-			['references*'], // demote
-		);
-		expect(tree.map((n) => n.slug)).toEqual(['zeta', 'alpha', 'references']);
-	});
+ it('applies promote/demote to top-level sort order', () => {
+  const tree = buildSectionTree(
+   [doc('zeta'), doc('alpha'), doc('references')],
+   ['zeta*'], // promote
+   ['references*'], // demote
+  );
+  expect(tree.map((n) => n.slug)).toEqual(['zeta', 'alpha', 'references']);
+ });
 });
 ```
 
 - [ ] **Step 2.2: Run to verify failure**
 
 Run:
+
 ```bash
 pnpm --filter starlight-llms-txt test test/sidebar-nav.test.ts
 ```
+
 Expected: `Failed to resolve import "../sidebar-nav"` — the module doesn't exist yet. This is the red state.
 
 - [ ] **Step 2.3: Implement `buildSectionTree`**
@@ -353,112 +363,114 @@ Create `packages/starlight-llms-txt/sidebar-nav.ts`:
 import micromatch from 'micromatch';
 
 export interface SectionNode {
-	title: string;
-	description?: string;
-	/** Slug for the linkable page; undefined for synthetic parent groups without an index page. */
-	slug?: string;
-	children: SectionNode[];
+ title: string;
+ description?: string;
+ /** Slug for the linkable page; undefined for synthetic parent groups without an index page. */
+ slug?: string;
+ children: SectionNode[];
 }
 
 type DocLike = {
-	id: string;
-	data: {
-		title: string;
-		description?: string;
-		draft?: boolean;
-		sidebar?: { order?: number };
-	};
+ id: string;
+ data: {
+  title: string;
+  description?: string;
+  draft?: boolean;
+  sidebar?: { order?: number };
+ };
 };
 
 function titleCase(segment: string): string {
-	return segment
-		.split(/[-_]/)
-		.filter(Boolean)
-		.map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-		.join(' ');
+ return segment
+  .split(/[-_]/)
+  .filter(Boolean)
+  .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+  .join(' ');
 }
 
 /** Sort key emulating generator.ts promote/demote prioritization for a single id. */
 function sortKey(id: string, promote: string[], demote: string[]): string {
-	const demoted = demote.findIndex((expr) => micromatch.isMatch(id, expr));
-	const promoted = demoted > -1 ? -1 : promote.findIndex((expr) => micromatch.isMatch(id, expr));
-	const prefixLength =
-		(promoted > -1 ? promote.length - promoted : 0) + demote.length - demoted - 1;
-	return '_'.repeat(prefixLength) + id;
+ const demoted = demote.findIndex((expr) => micromatch.isMatch(id, expr));
+ const promoted = demoted > -1 ? -1 : promote.findIndex((expr) => micromatch.isMatch(id, expr));
+ const prefixLength =
+  (promoted > -1 ? promote.length - promoted : 0) + demote.length - demoted - 1;
+ return '_'.repeat(prefixLength) + id;
 }
 
 export function buildSectionTree(
-	docs: DocLike[],
-	promote: string[] = [],
-	demote: string[] = [],
+ docs: DocLike[],
+ promote: string[] = [],
+ demote: string[] = [],
 ): SectionNode[] {
-	const filtered = docs.filter((d) => d.id !== 'index' && !d.data.draft);
+ const filtered = docs.filter((d) => d.id !== 'index' && !d.data.draft);
 
-	const sorted = [...filtered].sort((a, b) => {
-		const keyA = sortKey(a.id, promote, demote);
-		const keyB = sortKey(b.id, promote, demote);
-		if (keyA !== keyB) return keyA.localeCompare(keyB);
-		const orderA = a.data.sidebar?.order ?? Infinity;
-		const orderB = b.data.sidebar?.order ?? Infinity;
-		if (orderA !== orderB) return orderA - orderB;
-		return a.data.title.localeCompare(b.data.title);
-	});
+ const sorted = [...filtered].sort((a, b) => {
+  const keyA = sortKey(a.id, promote, demote);
+  const keyB = sortKey(b.id, promote, demote);
+  if (keyA !== keyB) return keyA.localeCompare(keyB);
+  const orderA = a.data.sidebar?.order ?? Infinity;
+  const orderB = b.data.sidebar?.order ?? Infinity;
+  if (orderA !== orderB) return orderA - orderB;
+  return a.data.title.localeCompare(b.data.title);
+ });
 
-	const groups = new Map<string, SectionNode>();
-	const result: SectionNode[] = [];
+ const groups = new Map<string, SectionNode>();
+ const result: SectionNode[] = [];
 
-	for (const d of sorted) {
-		const slashIdx = d.id.indexOf('/');
-		if (slashIdx === -1) {
-			result.push({
-				title: d.data.title,
-				description: d.data.description,
-				slug: d.id,
-				children: [],
-			});
-			continue;
-		}
+ for (const d of sorted) {
+  const slashIdx = d.id.indexOf('/');
+  if (slashIdx === -1) {
+   result.push({
+    title: d.data.title,
+    description: d.data.description,
+    slug: d.id,
+    children: [],
+   });
+   continue;
+  }
 
-		const groupKey = d.id.substring(0, slashIdx);
-		const remainder = d.id.substring(slashIdx + 1);
-		const isGroupIndex = remainder === 'index';
+  const groupKey = d.id.substring(0, slashIdx);
+  const remainder = d.id.substring(slashIdx + 1);
+  const isGroupIndex = remainder === 'index';
 
-		let group = groups.get(groupKey);
-		if (!group) {
-			group = {
-				title: isGroupIndex ? d.data.title : titleCase(groupKey),
-				description: isGroupIndex ? d.data.description : undefined,
-				slug: isGroupIndex ? groupKey : undefined,
-				children: [],
-			};
-			groups.set(groupKey, group);
-			result.push(group);
-		} else if (isGroupIndex) {
-			group.title = d.data.title;
-			group.description = d.data.description;
-			group.slug = groupKey;
-		}
+  let group = groups.get(groupKey);
+  if (!group) {
+   group = {
+    title: isGroupIndex ? d.data.title : titleCase(groupKey),
+    description: isGroupIndex ? d.data.description : undefined,
+    slug: isGroupIndex ? groupKey : undefined,
+    children: [],
+   };
+   groups.set(groupKey, group);
+   result.push(group);
+  } else if (isGroupIndex) {
+   group.title = d.data.title;
+   group.description = d.data.description;
+   group.slug = groupKey;
+  }
 
-		if (!isGroupIndex) {
-			group.children.push({
-				title: d.data.title,
-				description: d.data.description,
-				slug: d.id,
-				children: [],
-			});
-		}
-	}
+  if (!isGroupIndex) {
+   group.children.push({
+    title: d.data.title,
+    description: d.data.description,
+    slug: d.id,
+    children: [],
+   });
+  }
+ }
 
-	return result;
+ return result;
 }
 ```
 
 - [ ] **Step 2.4: Run to verify tests pass**
 
 Run:
+
 ```bash
 pnpm --filter starlight-llms-txt test test/sidebar-nav.test.ts
 ```
+
 Expected: all 9 tests in the `buildSectionTree` describe block pass.
 
 - [ ] **Step 2.5: Commit**
@@ -489,6 +501,7 @@ EOF
 **Phase B1 of the spec, part 2 of 2.** Pure helper that renders the section tree as a markdown list. Upstream-candidate.
 
 **Files:**
+
 - Modify: `packages/starlight-llms-txt/test/sidebar-nav.test.ts` (append new describe block)
 - Modify: `packages/starlight-llms-txt/sidebar-nav.ts` (add `renderSectionTree` export)
 
@@ -505,104 +518,106 @@ Append this `describe` block to the bottom of the same file:
 
 ```ts
 describe('renderSectionTree', () => {
-	const site = new URL('https://example.com/docs/');
+ const site = new URL('https://example.com/docs/');
 
-	const node = (
-		title: string,
-		slug: string | undefined,
-		description?: string,
-		children: SectionNode[] = [],
-	): SectionNode => ({ title, slug, description, children });
+ const node = (
+  title: string,
+  slug: string | undefined,
+  description?: string,
+  children: SectionNode[] = [],
+ ): SectionNode => ({ title, slug, description, children });
 
-	it('returns empty string for empty tree', () => {
-		expect(renderSectionTree([], site)).toBe('');
-	});
+ it('returns empty string for empty tree', () => {
+  expect(renderSectionTree([], site)).toBe('');
+ });
 
-	it('renders a flat list of linked nodes', () => {
-		const out = renderSectionTree(
-			[node('Overview', 'overview'), node('Configuration', 'configuration')],
-			site,
-		);
-		expect(out).toBe(
-			'## Sections\n' +
-				'\n' +
-				'- [Overview](https://example.com/docs/overview/)\n' +
-				'- [Configuration](https://example.com/docs/configuration/)',
-		);
-	});
+ it('renders a flat list of linked nodes', () => {
+  const out = renderSectionTree(
+   [node('Overview', 'overview'), node('Configuration', 'configuration')],
+   site,
+  );
+  expect(out).toBe(
+   '## Sections\n' +
+    '\n' +
+    '- [Overview](https://example.com/docs/overview/)\n' +
+    '- [Configuration](https://example.com/docs/configuration/)',
+  );
+ });
 
-	it('appends ": description" when description is present', () => {
-		const out = renderSectionTree(
-			[node('Overview', 'overview', 'Product overview')],
-			site,
-		);
-		expect(out).toBe(
-			'## Sections\n\n- [Overview](https://example.com/docs/overview/): Product overview',
-		);
-	});
+ it('appends ": description" when description is present', () => {
+  const out = renderSectionTree(
+   [node('Overview', 'overview', 'Product overview')],
+   site,
+  );
+  expect(out).toBe(
+   '## Sections\n\n- [Overview](https://example.com/docs/overview/): Product overview',
+  );
+ });
 
-	it('omits the colon when description is absent', () => {
-		const out = renderSectionTree([node('Overview', 'overview')], site);
-		expect(out.endsWith('(https://example.com/docs/overview/)')).toBe(true);
-		expect(out).not.toContain(':');
-	});
+ it('omits the colon when description is absent', () => {
+  const out = renderSectionTree([node('Overview', 'overview')], site);
+  expect(out.endsWith('(https://example.com/docs/overview/)')).toBe(true);
+  expect(out).not.toContain(':');
+ });
 
-	it('renders synthetic groups without a link', () => {
-		const out = renderSectionTree(
-			[node('Demo', undefined, undefined, [node('Phase 1', 'demo/phase-1')])],
-			site,
-		);
-		expect(out).toBe(
-			'## Sections\n' +
-				'\n' +
-				'- Demo\n' +
-				'  - [Phase 1](https://example.com/docs/demo/phase-1/)',
-		);
-	});
+ it('renders synthetic groups without a link', () => {
+  const out = renderSectionTree(
+   [node('Demo', undefined, undefined, [node('Phase 1', 'demo/phase-1')])],
+   site,
+  );
+  expect(out).toBe(
+   '## Sections\n' +
+    '\n' +
+    '- Demo\n' +
+    '  - [Phase 1](https://example.com/docs/demo/phase-1/)',
+  );
+ });
 
-	it('renders nested linked groups with descriptions', () => {
-		const out = renderSectionTree(
-			[
-				node('Demo', 'demo', '4-phase demo exercise', [
-					node('Phase 1 — Build', 'demo/phase-1-build', 'Deploy infrastructure via API'),
-				]),
-			],
-			site,
-		);
-		expect(out).toBe(
-			'## Sections\n' +
-				'\n' +
-				'- [Demo](https://example.com/docs/demo/): 4-phase demo exercise\n' +
-				'  - [Phase 1 — Build](https://example.com/docs/demo/phase-1-build/): Deploy infrastructure via API',
-		);
-	});
+ it('renders nested linked groups with descriptions', () => {
+  const out = renderSectionTree(
+   [
+    node('Demo', 'demo', '4-phase demo exercise', [
+     node('Phase 1 — Build', 'demo/phase-1-build', 'Deploy infrastructure via API'),
+    ]),
+   ],
+   site,
+  );
+  expect(out).toBe(
+   '## Sections\n' +
+    '\n' +
+    '- [Demo](https://example.com/docs/demo/): 4-phase demo exercise\n' +
+    '  - [Phase 1 — Build](https://example.com/docs/demo/phase-1-build/): Deploy infrastructure via API',
+  );
+ });
 
-	it('matches the xcsh#223 reference output', () => {
-		const out = renderSectionTree(
-			[
-				node('Overview', 'overview', 'Product overview and architecture'),
-				node('Demo', 'demo', '4-phase demo exercise', [
-					node('Phase 1 — Build', 'demo/phase-1-build', 'Deploy infrastructure via API'),
-					node('Phase 2 — Attack', 'demo/phase-2-attack', 'Simulated attack traffic'),
-					node('Phase 3 — Mitigate', 'demo/phase-3-mitigate', 'Apply and verify mitigations'),
-					node('Phase 4 — Teardown', 'demo/phase-4-teardown', 'Clean up demo objects'),
-				]),
-				node('API Reference', 'api-reference', 'REST API endpoints'),
-				node('FAQ', 'faq', 'Common questions'),
-			],
-			new URL('https://f5-sales-demo.github.io/csd/'),
-		);
-		expect(out).toMatchSnapshot();
-	});
+ it('matches the xcsh#223 reference output', () => {
+  const out = renderSectionTree(
+   [
+    node('Overview', 'overview', 'Product overview and architecture'),
+    node('Demo', 'demo', '4-phase demo exercise', [
+     node('Phase 1 — Build', 'demo/phase-1-build', 'Deploy infrastructure via API'),
+     node('Phase 2 — Attack', 'demo/phase-2-attack', 'Simulated attack traffic'),
+     node('Phase 3 — Mitigate', 'demo/phase-3-mitigate', 'Apply and verify mitigations'),
+     node('Phase 4 — Teardown', 'demo/phase-4-teardown', 'Clean up demo objects'),
+    ]),
+    node('API Reference', 'api-reference', 'REST API endpoints'),
+    node('FAQ', 'faq', 'Common questions'),
+   ],
+   new URL('https://f5-sales-demo.github.io/csd/'),
+  );
+  expect(out).toMatchSnapshot();
+ });
 });
 ```
 
 - [ ] **Step 3.2: Run to verify failure**
 
 Run:
+
 ```bash
 pnpm --filter starlight-llms-txt test test/sidebar-nav.test.ts
 ```
+
 Expected: the 9 `buildSectionTree` tests still pass; the new `renderSectionTree` block fails with "renderSectionTree is not a function" or an equivalent import error.
 
 - [ ] **Step 3.3: Implement `renderSectionTree`**
@@ -611,35 +626,36 @@ Append to `packages/starlight-llms-txt/sidebar-nav.ts`:
 
 ```ts
 export function renderSectionTree(tree: SectionNode[], site: URL): string {
-	if (tree.length === 0) return '';
+ if (tree.length === 0) return '';
 
-	const lines: string[] = ['## Sections', ''];
+ const lines: string[] = ['## Sections', ''];
 
-	function renderNode(node: SectionNode, depth: number): void {
-		const indent = '  '.repeat(depth);
-		const descSuffix = node.description ? `: ${node.description}` : '';
-		if (node.slug !== undefined) {
-			const url = new URL(`./${node.slug}/`, site);
-			lines.push(`${indent}- [${node.title}](${url})${descSuffix}`);
-		} else {
-			lines.push(`${indent}- ${node.title}${descSuffix}`);
-		}
-		for (const child of node.children) {
-			renderNode(child, depth + 1);
-		}
-	}
+ function renderNode(node: SectionNode, depth: number): void {
+  const indent = '  '.repeat(depth);
+  const descSuffix = node.description ? `: ${node.description}` : '';
+  if (node.slug !== undefined) {
+   const url = new URL(`./${node.slug}/`, site);
+   lines.push(`${indent}- [${node.title}](${url})${descSuffix}`);
+  } else {
+   lines.push(`${indent}- ${node.title}${descSuffix}`);
+  }
+  for (const child of node.children) {
+   renderNode(child, depth + 1);
+  }
+ }
 
-	for (const node of tree) {
-		renderNode(node, 0);
-	}
+ for (const node of tree) {
+  renderNode(node, 0);
+ }
 
-	return lines.join('\n');
+ return lines.join('\n');
 }
 ```
 
 - [ ] **Step 3.4: Run tests and accept snapshot**
 
 Run:
+
 ```bash
 pnpm --filter starlight-llms-txt test test/sidebar-nav.test.ts
 ```
@@ -674,9 +690,11 @@ If the snapshot shows unexpected drift (different indentation, missing newlines,
 - [ ] **Step 3.5: Re-run full test file**
 
 Run:
+
 ```bash
 pnpm --filter starlight-llms-txt test test/sidebar-nav.test.ts
 ```
+
 Expected: all tests pass, 1 snapshot written.
 
 - [ ] **Step 3.6: Commit**
@@ -707,6 +725,7 @@ EOF
 **Phase B1 of the spec, part 3.** Connect the pure helpers to Astro routes and the plugin config. Upstream-candidate (except the `.changeset/sidebar-nav.md` which is fork-only infrastructure but goes in this commit for atomicity — it's harmless if cherry-picked upstream, they'd just delete it).
 
 **Files:**
+
 - Modify: `packages/starlight-llms-txt/types.ts`
 - Modify: `packages/starlight-llms-txt/index.ts`
 - Modify: `packages/starlight-llms-txt/llms.txt.ts`
@@ -719,19 +738,19 @@ EOF
 Edit `packages/starlight-llms-txt/types.ts`. Inside the `StarlightLllmsTextOptions` interface (after the `rawContent` block), append:
 
 ```ts
-	/**
-	 * When enabled, generate a `## Sections` block in `llms.txt` listing the site's pages
-	 * in hierarchical order. Pages are grouped by first path segment (e.g. `demo/phase-1-build`
-	 * under a `demo` group). If a group has an index page (`demo/index`), its frontmatter is
-	 * used for the group heading; otherwise the segment is title-cased. Each entry's
-	 * `description` (from frontmatter) is appended automatically when present.
-	 *
-	 * Respects the `promote` and `demote` options for ordering. Draft pages and non-default
-	 * locales are excluded.
-	 *
-	 * @default false
-	 */
-	sidebarNav?: boolean;
+ /**
+  * When enabled, generate a `## Sections` block in `llms.txt` listing the site's pages
+  * in hierarchical order. Pages are grouped by first path segment (e.g. `demo/phase-1-build`
+  * under a `demo` group). If a group has an index page (`demo/index`), its frontmatter is
+  * used for the group heading; otherwise the segment is title-cased. Each entry's
+  * `description` (from frontmatter) is appended automatically when present.
+  *
+  * Respects the `promote` and `demote` options for ordering. Draft pages and non-default
+  * locales are excluded.
+  *
+  * @default false
+  */
+ sidebarNav?: boolean;
 ```
 
 In the `ProjectContext` interface (earlier in the same file), add a `sidebarNav` field:
@@ -768,63 +787,63 @@ export const prerender = true;
  * Route that generates an introductory summary of this site for LLMs.
  */
 export const GET: APIRoute = async (context) => {
-	const title = getSiteTitle();
-	const description = starlightLllmsTxtContext.description
-		? `> ${starlightLllmsTxtContext.description}`
-		: '';
-	const site = new URL(ensureTrailingSlash(starlightLllmsTxtContext.base), context.site);
-	const llmsFullLink = new URL('./llms-full.txt', site);
-	const llmsSmallLink = new URL('./llms-small.txt', site);
+ const title = getSiteTitle();
+ const description = starlightLllmsTxtContext.description
+  ? `> ${starlightLllmsTxtContext.description}`
+  : '';
+ const site = new URL(ensureTrailingSlash(starlightLllmsTxtContext.base), context.site);
+ const llmsFullLink = new URL('./llms-full.txt', site);
+ const llmsSmallLink = new URL('./llms-small.txt', site);
 
-	const segments = [`# ${title}`];
-	if (description) segments.push(description);
-	if (starlightLllmsTxtContext.details) segments.push(starlightLllmsTxtContext.details);
+ const segments = [`# ${title}`];
+ if (description) segments.push(description);
+ if (starlightLllmsTxtContext.details) segments.push(starlightLllmsTxtContext.details);
 
-	// Further documentation links.
-	segments.push(`## Documentation Sets`);
-	segments.push(
-		[
-			`- [Abridged documentation](${llmsSmallLink}): a compact version of the documentation for ${getSiteTitle()}, with non-essential content removed`,
-			`- [Complete documentation](${llmsFullLink}): the full documentation for ${getSiteTitle()}`,
-			...starlightLllmsTxtContext.customSets.map(
-				({ label, description, slug }) =>
-					`- [${label}](${new URL(`./_llms-txt/${slug}.txt`, site)})` +
-					(description ? `: ${description}` : '')
-			),
-		].join('\n')
-	);
+ // Further documentation links.
+ segments.push(`## Documentation Sets`);
+ segments.push(
+  [
+   `- [Abridged documentation](${llmsSmallLink}): a compact version of the documentation for ${getSiteTitle()}, with non-essential content removed`,
+   `- [Complete documentation](${llmsFullLink}): the full documentation for ${getSiteTitle()}`,
+   ...starlightLllmsTxtContext.customSets.map(
+    ({ label, description, slug }) =>
+     `- [${label}](${new URL(`./_llms-txt/${slug}.txt`, site)})` +
+     (description ? `: ${description}` : '')
+   ),
+  ].join('\n')
+ );
 
-	// Sidebar navigation — Tier 2 routing.
-	if (starlightLllmsTxtContext.sidebarNav) {
-		const docs = await getCollection('docs', (doc) => isDefaultLocale(doc) && !doc.data.draft);
-		const tree = buildSectionTree(
-			docs,
-			starlightLllmsTxtContext.promote,
-			starlightLllmsTxtContext.demote
-		);
-		const rendered = renderSectionTree(tree, site);
-		if (rendered) segments.push(rendered);
-	}
+ // Sidebar navigation — Tier 2 routing.
+ if (starlightLllmsTxtContext.sidebarNav) {
+  const docs = await getCollection('docs', (doc) => isDefaultLocale(doc) && !doc.data.draft);
+  const tree = buildSectionTree(
+   docs,
+   starlightLllmsTxtContext.promote,
+   starlightLllmsTxtContext.demote
+  );
+  const rendered = renderSectionTree(tree, site);
+  if (rendered) segments.push(rendered);
+ }
 
-	// Additional notes.
-	segments.push(`## Notes`);
-	segments.push(`- The complete documentation includes all content from the official documentation
+ // Additional notes.
+ segments.push(`## Notes`);
+ segments.push(`- The complete documentation includes all content from the official documentation
 - The content is automatically generated from the same source as the official documentation`);
 
-	// Optional links.
-	if (starlightLllmsTxtContext.optionalLinks.length > 0) {
-		segments.push('## Optional');
-		segments.push(
-			starlightLllmsTxtContext.optionalLinks
-				.map(
-					(link) =>
-						`- [${link.label}](${link.url})${link.description ? `: ${link.description}` : ''}`
-				)
-				.join('\n')
-		);
-	}
+ // Optional links.
+ if (starlightLllmsTxtContext.optionalLinks.length > 0) {
+  segments.push('## Optional');
+  segments.push(
+   starlightLllmsTxtContext.optionalLinks
+    .map(
+     (link) =>
+      `- [${link.label}](${link.url})${link.description ? `: ${link.description}` : ''}`
+    )
+    .join('\n')
+  );
+ }
 
-	return new Response(segments.join('\n\n') + '\n');
+ return new Response(segments.join('\n\n') + '\n');
 };
 ```
 
@@ -865,7 +884,8 @@ Each entry's `description` (from frontmatter) is appended automatically when pre
   - [Phase 1 — Build](https://example.com/demo/phase-1-build/): Deploy infrastructure via API
 ```
 
-Respects the [`promote`](#promote) and [`demote`](#demote) options for ordering. Draft pages and non-default locales are excluded.
+Respects the `promote` and `demote` options for ordering. Draft pages and non-default locales are excluded.
+
 ```
 
 - [ ] **Step 4.6: Add changeset**
@@ -880,29 +900,37 @@ Create `.changeset/sidebar-nav.md`:
 Add `sidebarNav` option. When enabled, the plugin includes a `## Sections` block in `llms.txt` with the site's pages grouped hierarchically. Entries include frontmatter descriptions inline when present.
 ```
 
-Note: the package name in the changeset header is `starlight-llms-txt` (pre-rename). Task 13's atomic rename commit will leave this as-is because changesets are consumed at release time and the `.changeset/v1-0-0.md` in Task 14 supersedes this for the first release. If a future release uses this changeset standalone, it will need its package header updated — but for v1.0.0 it's bundled into the major-bump changeset.
+Note: the package name in the changeset header is `starlight-llms-txt` (pre-rename). Task 13's atomic rename commit will leave this as-is because changesets are consumed at release time and the `.changeset/v1-0-0.md` in Task 14 supersedes this for the first release.
+If a future release uses this changeset standalone, it will need its package header updated — but for v1.0.0 it's bundled into the major-bump changeset.
 
 - [ ] **Step 4.7: Run unit tests**
 
 Run:
+
 ```bash
 pnpm --filter starlight-llms-txt test
 ```
+
 Expected: all tests still pass (no new tests added in this task, Tasks 2 and 3 coverage unchanged).
 
 - [ ] **Step 4.8: Run docs build and inspect output**
 
 Run:
+
 ```bash
 pnpm build:docs
 ```
+
 Expected: build completes; `docs/dist/llms.txt` exists.
 
 Inspect:
+
 ```bash
 grep -A 20 '^## Sections' docs/dist/llms.txt
 ```
+
 Expected: a `## Sections` block listing the docs site's pages (`getting-started`, `configuration`). Example:
+
 ```
 ## Sections
 
@@ -944,6 +972,7 @@ EOF
 **Phase B2 of the spec, part 1 of 2.** Pure helper that renders a list of federated sites. Upstream-candidate.
 
 **Files:**
+
 - Create: `packages/starlight-llms-txt/test/federated-sites.test.ts`
 - Create: `packages/starlight-llms-txt/federated-sites.ts`
 
@@ -956,55 +985,57 @@ import { describe, it, expect } from 'vitest';
 import { renderFederatedSites } from '../federated-sites';
 
 describe('renderFederatedSites', () => {
-	it('returns empty string for empty list', () => {
-		expect(renderFederatedSites([])).toBe('');
-	});
+ it('returns empty string for empty list', () => {
+  expect(renderFederatedSites([])).toBe('');
+ });
 
-	it('renders a single entry without description', () => {
-		expect(
-			renderFederatedSites([{ label: 'WAF', url: 'https://example.com/waf/llms.txt' }]),
-		).toBe('## Federated Sites\n\n- [WAF](https://example.com/waf/llms.txt)');
-	});
+ it('renders a single entry without description', () => {
+  expect(
+   renderFederatedSites([{ label: 'WAF', url: 'https://example.com/waf/llms.txt' }]),
+  ).toBe('## Federated Sites\n\n- [WAF](https://example.com/waf/llms.txt)');
+ });
 
-	it('renders a single entry with description', () => {
-		expect(
-			renderFederatedSites([
-				{ label: 'WAF', url: 'https://example.com/waf/llms.txt', description: 'Web application firewall' },
-			]),
-		).toBe('## Federated Sites\n\n- [WAF](https://example.com/waf/llms.txt): Web application firewall');
-	});
+ it('renders a single entry with description', () => {
+  expect(
+   renderFederatedSites([
+    { label: 'WAF', url: 'https://example.com/waf/llms.txt', description: 'Web application firewall' },
+   ]),
+  ).toBe('## Federated Sites\n\n- [WAF](https://example.com/waf/llms.txt): Web application firewall');
+ });
 
-	it('preserves given order and handles mixed entries', () => {
-		const out = renderFederatedSites([
-			{ label: 'WAF', url: 'https://example.com/waf/llms.txt', description: 'Web application firewall' },
-			{ label: 'CSD', url: 'https://example.com/csd/llms.txt' },
-			{ label: 'DDOS', url: 'https://example.com/ddos/llms.txt', description: 'DDoS protection' },
-		]);
-		expect(out).toBe(
-			'## Federated Sites\n' +
-				'\n' +
-				'- [WAF](https://example.com/waf/llms.txt): Web application firewall\n' +
-				'- [CSD](https://example.com/csd/llms.txt)\n' +
-				'- [DDOS](https://example.com/ddos/llms.txt): DDoS protection',
-		);
-	});
+ it('preserves given order and handles mixed entries', () => {
+  const out = renderFederatedSites([
+   { label: 'WAF', url: 'https://example.com/waf/llms.txt', description: 'Web application firewall' },
+   { label: 'CSD', url: 'https://example.com/csd/llms.txt' },
+   { label: 'DDOS', url: 'https://example.com/ddos/llms.txt', description: 'DDoS protection' },
+  ]);
+  expect(out).toBe(
+   '## Federated Sites\n' +
+    '\n' +
+    '- [WAF](https://example.com/waf/llms.txt): Web application firewall\n' +
+    '- [CSD](https://example.com/csd/llms.txt)\n' +
+    '- [DDOS](https://example.com/ddos/llms.txt): DDoS protection',
+  );
+ });
 
-	it('matches the xcsh#223 reference output', () => {
-		const out = renderFederatedSites([
-			{ label: 'WAF', url: 'https://f5-sales-demo.github.io/waf/llms.txt', description: 'Web application firewall' },
-			{ label: 'CSD', url: 'https://f5-sales-demo.github.io/csd/llms.txt', description: 'Client-side defense' },
-		]);
-		expect(out).toMatchSnapshot();
-	});
+ it('matches the xcsh#223 reference output', () => {
+  const out = renderFederatedSites([
+   { label: 'WAF', url: 'https://f5-sales-demo.github.io/waf/llms.txt', description: 'Web application firewall' },
+   { label: 'CSD', url: 'https://f5-sales-demo.github.io/csd/llms.txt', description: 'Client-side defense' },
+  ]);
+  expect(out).toMatchSnapshot();
+ });
 });
 ```
 
 - [ ] **Step 5.2: Run to verify failure**
 
 Run:
+
 ```bash
 pnpm --filter starlight-llms-txt test test/federated-sites.test.ts
 ```
+
 Expected: `Failed to resolve import "../federated-sites"`.
 
 - [ ] **Step 5.3: Implement `renderFederatedSites`**
@@ -1013,36 +1044,41 @@ Create `packages/starlight-llms-txt/federated-sites.ts`:
 
 ```ts
 export interface FederatedSite {
-	label: string;
-	url: string;
-	description?: string;
+ label: string;
+ url: string;
+ description?: string;
 }
 
 export function renderFederatedSites(sites: FederatedSite[]): string {
-	if (sites.length === 0) return '';
+ if (sites.length === 0) return '';
 
-	const lines: string[] = ['## Federated Sites', ''];
-	for (const site of sites) {
-		const desc = site.description ? `: ${site.description}` : '';
-		lines.push(`- [${site.label}](${site.url})${desc}`);
-	}
-	return lines.join('\n');
+ const lines: string[] = ['## Federated Sites', ''];
+ for (const site of sites) {
+  const desc = site.description ? `: ${site.description}` : '';
+  lines.push(`- [${site.label}](${site.url})${desc}`);
+ }
+ return lines.join('\n');
 }
 ```
 
 - [ ] **Step 5.4: Run tests and accept snapshot**
 
 Run:
+
 ```bash
 pnpm --filter starlight-llms-txt test test/federated-sites.test.ts
 ```
+
 Expected: all tests pass; one snapshot written.
 
 Verify the snapshot:
+
 ```bash
 cat packages/starlight-llms-txt/test/__snapshots__/federated-sites.test.ts.snap
 ```
+
 Expected content:
+
 ```
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
@@ -1082,6 +1118,7 @@ EOF
 **Phase B2 of the spec, part 2 of 2.** Upstream-candidate.
 
 **Files:**
+
 - Modify: `packages/starlight-llms-txt/types.ts`
 - Modify: `packages/starlight-llms-txt/index.ts`
 - Modify: `packages/starlight-llms-txt/llms.txt.ts`
@@ -1093,26 +1130,26 @@ EOF
 Edit `packages/starlight-llms-txt/types.ts`. Append to the `StarlightLllmsTextOptions` interface:
 
 ```ts
-	/**
-	 * An array of links to other sites' `llms.txt` entry points — used by a docs portal
-	 * to federate out to product-specific documentation.
-	 *
-	 * Rendered as a `## Federated Sites` block in `llms.txt`, placed after `## Sections`
-	 * and before `## Notes`. If the array is empty (the default), the block is omitted
-	 * entirely, so leaf product sites don't need conditional config.
-	 *
-	 * @default []
-	 * @example
-	 * federatedSites: [
-	 *   { label: 'WAF', url: 'https://example.com/waf/llms.txt', description: 'Web application firewall' },
-	 *   { label: 'CSD', url: 'https://example.com/csd/llms.txt', description: 'Client-side defense' },
-	 * ]
-	 */
-	federatedSites?: Array<{
-		label: string;
-		url: string;
-		description?: string;
-	}>;
+ /**
+  * An array of links to other sites' `llms.txt` entry points — used by a docs portal
+  * to federate out to product-specific documentation.
+  *
+  * Rendered as a `## Federated Sites` block in `llms.txt`, placed after `## Sections`
+  * and before `## Notes`. If the array is empty (the default), the block is omitted
+  * entirely, so leaf product sites don't need conditional config.
+  *
+  * @default []
+  * @example
+  * federatedSites: [
+  *   { label: 'WAF', url: 'https://example.com/waf/llms.txt', description: 'Web application firewall' },
+  *   { label: 'CSD', url: 'https://example.com/csd/llms.txt', description: 'Client-side defense' },
+  * ]
+  */
+ federatedSites?: Array<{
+  label: string;
+  url: string;
+  description?: string;
+ }>;
 ```
 
 In the `ProjectContext` interface, add:
@@ -1145,11 +1182,11 @@ Edit `packages/starlight-llms-txt/llms.txt.ts`:
 2. Add the rendering block immediately after the `sidebarNav` block (before `segments.push(\`## Notes\`);`):
 
 ```ts
-	// Federated sites — Tier 1 routing.
-	{
-		const rendered = renderFederatedSites(starlightLllmsTxtContext.federatedSites);
-		if (rendered) segments.push(rendered);
-	}
+ // Federated sites — Tier 1 routing.
+ {
+  const rendered = renderFederatedSites(starlightLllmsTxtContext.federatedSites);
+  if (rendered) segments.push(rendered);
+ }
 ```
 
 The block is wrapped in a scope so the local `rendered` doesn't collide with the one in the `sidebarNav` block.
@@ -1183,6 +1220,7 @@ Output:
 ```
 
 The block is placed between `## Sections` and `## Notes` — local navigation before cross-site traversal.
+
 ```
 
 - [ ] **Step 6.5: Add changeset**
@@ -1203,16 +1241,19 @@ Temporarily enable federatedSites in the docs site for verification (will be rev
 
 ```ts
 federatedSites: [
-	{ label: 'Example', url: 'https://example.com/llms.txt', description: 'Example federation target' },
+ { label: 'Example', url: 'https://example.com/llms.txt', description: 'Example federation target' },
 ],
 ```
 
 Run:
+
 ```bash
 pnpm build:docs
 grep -A 5 '^## Federated Sites' docs/dist/llms.txt
 ```
+
 Expected:
+
 ```
 ## Federated Sites
 
@@ -1220,6 +1261,7 @@ Expected:
 ```
 
 Remove the temporary `federatedSites` block from `docs/astro.config.ts` before committing:
+
 ```bash
 git diff docs/astro.config.ts
 # confirm only the sidebarNav: true line from Task 4 remains as a docs change
@@ -1228,9 +1270,11 @@ git diff docs/astro.config.ts
 - [ ] **Step 6.7: Run unit tests**
 
 Run:
+
 ```bash
 pnpm --filter starlight-llms-txt test
 ```
+
 Expected: all tests pass.
 
 - [ ] **Step 6.8: Commit**
@@ -1265,11 +1309,14 @@ EOF
 - [ ] **Step 7.1: Fetch the current PR head SHA**
 
 Run:
+
 ```bash
 gh api repos/delucis/starlight-llms-txt/pulls/32 \
   --jq '{head_ref: .head.ref, head_sha: .head.sha, head_repo: .head.repo.full_name}'
 ```
+
 Expected (from spec):
+
 ```json
 {
   "head_ref": "topic/markdown-pages",
@@ -1283,15 +1330,19 @@ Expected (from spec):
 **If the SHA matches `2a1ae6d259cee07d7466281550b1103b3e48fc5f`:** proceed to Task 8 unchanged.
 
 **If the SHA differs:** someone has pushed to mavam's branch since the spec. Fetch the new branch anyway (Task 8.2) and inspect the new commits:
+
 ```bash
 git log --oneline 2a1ae6d259cee07d7466281550b1103b3e48fc5f..mavam-fork/topic/markdown-pages
 ```
+
 If the new commits are additive refactors (still about per-page markdown), proceed. If they've rewritten the feature (e.g. different config shape), stop — the spec's `excludePages: ['index*']` glob diff assumption may no longer hold, and the rest of Task 8 needs revisiting with the user. Do not proceed without explicit confirmation.
 
 **If the PR has been closed / merged upstream:** great news, but verify on the command line:
+
 ```bash
 gh api repos/delucis/starlight-llms-txt/pulls/32 --jq '.state,.merged_at'
 ```
+
 If merged, we still want to cherry-pick from the upstream merge commit onto our branch (our `main` doesn't have it yet). Substitute the merge commit SHA for the branch head in Task 8 and note the divergence for the PR description.
 
 - [ ] **Step 7.3: No commit**
@@ -1309,31 +1360,38 @@ This task is a verification gate, not a code change. Proceed to Task 8.
 - [ ] **Step 8.1: Confirm a clean working tree**
 
 Run:
+
 ```bash
 git status
 ```
+
 Expected: "nothing to commit, working tree clean". If not clean, commit or stash before proceeding — cherry-pick in a dirty tree is error-prone.
 
 - [ ] **Step 8.2: Add mavam's fork as a remote and fetch**
 
 Run:
+
 ```bash
 git remote add mavam-fork https://github.com/tenzir/starlight-llms-txt.git 2>/dev/null || true
 git fetch mavam-fork topic/markdown-pages
 ```
+
 Expected: fetches refs; `FETCH_HEAD` now points at the 17 commits on `topic/markdown-pages`.
 
 - [ ] **Step 8.3: Identify the commits to replay**
 
 Run:
+
 ```bash
 git log --oneline --reverse main..mavam-fork/topic/markdown-pages
 ```
+
 Expected: a list of ~17 commits. Note the first and last SHAs; they form the cherry-pick range.
 
 - [ ] **Step 8.4: Cherry-pick the range**
 
 Run:
+
 ```bash
 git cherry-pick -x main..mavam-fork/topic/markdown-pages
 ```
@@ -1352,26 +1410,32 @@ Repeat until all commits are applied. Expected final state: 17 new commits on to
 - [ ] **Step 8.5: Verify authorship is preserved**
 
 Run:
+
 ```bash
 git log --format='%an <%ae> %s' main..HEAD | head -5
 ```
+
 Expected: at least the first few lines show `Matthias Vallentin <...>` as author. Committer shown via `%cn` will be you, which is correct.
 
 - [ ] **Step 8.6: Run the docs build as a smoke test**
 
 Run:
+
 ```bash
 pnpm install  # new files may require
 pnpm build:docs
 ```
+
 Expected: build completes; `docs/dist/getting-started.html.md` exists (the docs site's first page, since mavam's `docs/astro.config.ts` cherry-pick enabled `perPageMarkdown`).
 
 - [ ] **Step 8.7: Run unit tests**
 
 Run:
+
 ```bash
 pnpm --filter starlight-llms-txt test
 ```
+
 Expected: all existing tests pass. No new tests yet for per-page-markdown — those arrive in Task 10.
 
 - [ ] **Step 8.8: No additional commit**
@@ -1381,9 +1445,11 @@ All commits on this task came from `cherry-pick`. No manual commit.
 - [ ] **Step 8.9: Remove the temporary remote**
 
 Run:
+
 ```bash
 git remote remove mavam-fork
 ```
+
 Cleanup — the remote was only needed for the fetch.
 
 ---
@@ -1393,6 +1459,7 @@ Cleanup — the remote was only needed for the fetch.
 **Phase B3 of the spec, part 3 of 4.** Refactor the literal-match exclusion logic into a pure helper so Task 10's tests have something to import. Upstream-candidate.
 
 **Files:**
+
 - Create: `packages/starlight-llms-txt/per-page-markdown-utils.ts`
 - Modify: `packages/starlight-llms-txt/index.ts` (use `resolvePerPageMarkdownOptions`)
 - Modify: `packages/starlight-llms-txt/page-markdown.ts` (use `slugToPath`, `shouldExcludePage`)
@@ -1402,6 +1469,7 @@ This task is a refactor with no behavior change — it preserves the exact seman
 - [ ] **Step 9.1: Inspect the cherry-picked per-page-markdown code**
 
 Review the three files so you know what to extract:
+
 ```bash
 cat packages/starlight-llms-txt/page-markdown.ts
 cat packages/starlight-llms-txt/page-markdown-generator.ts
@@ -1421,50 +1489,50 @@ Create `packages/starlight-llms-txt/per-page-markdown-utils.ts`:
  */
 
 export interface PerPageMarkdownConfig {
-	enabled: boolean;
-	extensionStrategy: 'append' | 'replace';
-	excludePages: string[];
+ enabled: boolean;
+ extensionStrategy: 'append' | 'replace';
+ excludePages: string[];
 }
 
 export type PerPageMarkdownUserOption =
-	| boolean
-	| {
-			extensionStrategy?: 'append' | 'replace';
-			excludePages?: string[];
-	  };
+ | boolean
+ | {
+   extensionStrategy?: 'append' | 'replace';
+   excludePages?: string[];
+   };
 
 const DEFAULTS = {
-	extensionStrategy: 'append' as const,
-	excludePages: ['404'],
+ extensionStrategy: 'append' as const,
+ excludePages: ['404'],
 };
 
 /** Resolve the user-supplied `perPageMarkdown` option into a fully-populated config. */
 export function resolvePerPageMarkdownOptions(
-	option: PerPageMarkdownUserOption | undefined,
+ option: PerPageMarkdownUserOption | undefined,
 ): PerPageMarkdownConfig {
-	if (option === undefined || option === false) {
-		return { enabled: false, ...DEFAULTS, excludePages: [...DEFAULTS.excludePages] };
-	}
-	if (option === true) {
-		return { enabled: true, ...DEFAULTS, excludePages: [...DEFAULTS.excludePages] };
-	}
-	return {
-		enabled: true,
-		extensionStrategy: option.extensionStrategy ?? DEFAULTS.extensionStrategy,
-		excludePages: option.excludePages ?? [...DEFAULTS.excludePages],
-	};
+ if (option === undefined || option === false) {
+  return { enabled: false, ...DEFAULTS, excludePages: [...DEFAULTS.excludePages] };
+ }
+ if (option === true) {
+  return { enabled: true, ...DEFAULTS, excludePages: [...DEFAULTS.excludePages] };
+ }
+ return {
+  enabled: true,
+  extensionStrategy: option.extensionStrategy ?? DEFAULTS.extensionStrategy,
+  excludePages: option.excludePages ?? [...DEFAULTS.excludePages],
+ };
 }
 
 /** Map a page slug to the per-page markdown output path using the resolved extension strategy. */
 export function slugToPath(slug: string, strategy: 'append' | 'replace'): string {
-	return strategy === 'append' ? `${slug}.html.md` : `${slug}.md`;
+ return strategy === 'append' ? `${slug}.html.md` : `${slug}.md`;
 }
 
 /** Return true if `id` matches any of the exclusion patterns (literal match in Task 9; micromatch in Task 11). */
 export function shouldExcludePage(id: string, patterns: string[]): boolean {
-	if (patterns.length === 0) return false;
-	// Literal match — Task 11 swaps this for micromatch.isMatch.
-	return patterns.includes(id);
+ if (patterns.length === 0) return false;
+ // Literal match — Task 11 swaps this for micromatch.isMatch.
+ return patterns.includes(id);
 }
 ```
 
@@ -1514,17 +1582,21 @@ The exact replacement depends on what mavam's PR looks like — inspect the file
 - [ ] **Step 9.5: Run unit tests**
 
 Run:
+
 ```bash
 pnpm --filter starlight-llms-txt test
 ```
+
 Expected: all existing tests pass. No new tests in this task.
 
 - [ ] **Step 9.6: Run docs build**
 
 Run:
+
 ```bash
 pnpm build:docs
 ```
+
 Expected: build completes. `docs/dist/getting-started.html.md` and `docs/dist/configuration.html.md` exist (per-page markdown output is unchanged from before the refactor — this is the refactor safety check).
 
 - [ ] **Step 9.7: Commit**
@@ -1553,6 +1625,7 @@ EOF
 **Phase B3 of the spec, part 4 of 4.** Write the test suite, observe the glob cases fail, swap to micromatch, all pass. Upstream-candidate.
 
 **Files:**
+
 - Create: `packages/starlight-llms-txt/test/per-page-markdown-utils.test.ts`
 - Modify: `packages/starlight-llms-txt/per-page-markdown-utils.ts` (swap literal to micromatch)
 - Create: `.changeset/per-page-markdown.md`
@@ -1564,110 +1637,112 @@ Create `packages/starlight-llms-txt/test/per-page-markdown-utils.test.ts`:
 ```ts
 import { describe, it, expect } from 'vitest';
 import {
-	resolvePerPageMarkdownOptions,
-	slugToPath,
-	shouldExcludePage,
+ resolvePerPageMarkdownOptions,
+ slugToPath,
+ shouldExcludePage,
 } from '../per-page-markdown-utils';
 
 describe('resolvePerPageMarkdownOptions', () => {
-	it('disables the feature when option is undefined', () => {
-		const c = resolvePerPageMarkdownOptions(undefined);
-		expect(c.enabled).toBe(false);
-		expect(c.extensionStrategy).toBe('append');
-		expect(c.excludePages).toEqual(['404']);
-	});
+ it('disables the feature when option is undefined', () => {
+  const c = resolvePerPageMarkdownOptions(undefined);
+  expect(c.enabled).toBe(false);
+  expect(c.extensionStrategy).toBe('append');
+  expect(c.excludePages).toEqual(['404']);
+ });
 
-	it('disables the feature when option is false', () => {
-		expect(resolvePerPageMarkdownOptions(false).enabled).toBe(false);
-	});
+ it('disables the feature when option is false', () => {
+  expect(resolvePerPageMarkdownOptions(false).enabled).toBe(false);
+ });
 
-	it('enables the feature with defaults when option is true', () => {
-		const c = resolvePerPageMarkdownOptions(true);
-		expect(c.enabled).toBe(true);
-		expect(c.extensionStrategy).toBe('append');
-		expect(c.excludePages).toEqual(['404']);
-	});
+ it('enables the feature with defaults when option is true', () => {
+  const c = resolvePerPageMarkdownOptions(true);
+  expect(c.enabled).toBe(true);
+  expect(c.extensionStrategy).toBe('append');
+  expect(c.excludePages).toEqual(['404']);
+ });
 
-	it('merges partial overrides with defaults', () => {
-		const c = resolvePerPageMarkdownOptions({ extensionStrategy: 'replace' });
-		expect(c.enabled).toBe(true);
-		expect(c.extensionStrategy).toBe('replace');
-		expect(c.excludePages).toEqual(['404']);
-	});
+ it('merges partial overrides with defaults', () => {
+  const c = resolvePerPageMarkdownOptions({ extensionStrategy: 'replace' });
+  expect(c.enabled).toBe(true);
+  expect(c.extensionStrategy).toBe('replace');
+  expect(c.excludePages).toEqual(['404']);
+ });
 
-	it('overrides both fields when provided', () => {
-		const c = resolvePerPageMarkdownOptions({
-			extensionStrategy: 'replace',
-			excludePages: ['index*', 'draft*'],
-		});
-		expect(c).toEqual({
-			enabled: true,
-			extensionStrategy: 'replace',
-			excludePages: ['index*', 'draft*'],
-		});
-	});
+ it('overrides both fields when provided', () => {
+  const c = resolvePerPageMarkdownOptions({
+   extensionStrategy: 'replace',
+   excludePages: ['index*', 'draft*'],
+  });
+  expect(c).toEqual({
+   enabled: true,
+   extensionStrategy: 'replace',
+   excludePages: ['index*', 'draft*'],
+  });
+ });
 
-	it('does not mutate the default excludePages across calls', () => {
-		const a = resolvePerPageMarkdownOptions(true);
-		a.excludePages.push('pollution');
-		const b = resolvePerPageMarkdownOptions(true);
-		expect(b.excludePages).toEqual(['404']);
-	});
+ it('does not mutate the default excludePages across calls', () => {
+  const a = resolvePerPageMarkdownOptions(true);
+  a.excludePages.push('pollution');
+  const b = resolvePerPageMarkdownOptions(true);
+  expect(b.excludePages).toEqual(['404']);
+ });
 });
 
 describe('slugToPath', () => {
-	it('appends .html.md for the append strategy', () => {
-		expect(slugToPath('getting-started', 'append')).toBe('getting-started.html.md');
-	});
+ it('appends .html.md for the append strategy', () => {
+  expect(slugToPath('getting-started', 'append')).toBe('getting-started.html.md');
+ });
 
-	it('appends .md for the replace strategy', () => {
-		expect(slugToPath('getting-started', 'replace')).toBe('getting-started.md');
-	});
+ it('appends .md for the replace strategy', () => {
+  expect(slugToPath('getting-started', 'replace')).toBe('getting-started.md');
+ });
 
-	it('handles nested slugs', () => {
-		expect(slugToPath('demo/phase-1-build', 'append')).toBe('demo/phase-1-build.html.md');
-		expect(slugToPath('demo/phase-1-build', 'replace')).toBe('demo/phase-1-build.md');
-	});
+ it('handles nested slugs', () => {
+  expect(slugToPath('demo/phase-1-build', 'append')).toBe('demo/phase-1-build.html.md');
+  expect(slugToPath('demo/phase-1-build', 'replace')).toBe('demo/phase-1-build.md');
+ });
 });
 
 describe('shouldExcludePage', () => {
-	it('returns false for empty pattern list', () => {
-		expect(shouldExcludePage('anything', [])).toBe(false);
-	});
+ it('returns false for empty pattern list', () => {
+  expect(shouldExcludePage('anything', [])).toBe(false);
+ });
 
-	it('returns true on literal match', () => {
-		expect(shouldExcludePage('404', ['404'])).toBe(true);
-	});
+ it('returns true on literal match', () => {
+  expect(shouldExcludePage('404', ['404'])).toBe(true);
+ });
 
-	it('returns false on literal mismatch', () => {
-		expect(shouldExcludePage('getting-started', ['404'])).toBe(false);
-	});
+ it('returns false on literal mismatch', () => {
+  expect(shouldExcludePage('getting-started', ['404'])).toBe(false);
+ });
 
-	it('returns true on glob match', () => {
-		expect(shouldExcludePage('index', ['index*'])).toBe(true);
-	});
+ it('returns true on glob match', () => {
+  expect(shouldExcludePage('index', ['index*'])).toBe(true);
+ });
 
-	it('returns true on glob match at a nested path', () => {
-		expect(shouldExcludePage('guides/index', ['**/index'])).toBe(true);
-	});
+ it('returns true on glob match at a nested path', () => {
+  expect(shouldExcludePage('guides/index', ['**/index'])).toBe(true);
+ });
 
-	it('returns false when glob does not match', () => {
-		expect(shouldExcludePage('guides/intro', ['index*'])).toBe(false);
-	});
+ it('returns false when glob does not match', () => {
+  expect(shouldExcludePage('guides/intro', ['index*'])).toBe(false);
+ });
 
-	it('matches any pattern in a multi-pattern list', () => {
-		expect(shouldExcludePage('draft', ['index*', 'draft*'])).toBe(true);
-		expect(shouldExcludePage('published', ['index*', 'draft*'])).toBe(false);
-	});
+ it('matches any pattern in a multi-pattern list', () => {
+  expect(shouldExcludePage('draft', ['index*', 'draft*'])).toBe(true);
+  expect(shouldExcludePage('published', ['index*', 'draft*'])).toBe(false);
+ });
 });
 ```
 
 - [ ] **Step 10.2: Run to verify failures on glob cases**
 
 Run:
+
 ```bash
 pnpm --filter starlight-llms-txt test test/per-page-markdown-utils.test.ts
 ```
+
 Expected: `resolvePerPageMarkdownOptions` and `slugToPath` tests all pass; several `shouldExcludePage` tests fail with "returns true on glob match" failing (the current literal `includes` won't match `'index'` against `'index*'`). This is the red state.
 
 - [ ] **Step 10.3: Switch `shouldExcludePage` to micromatch**
@@ -1688,9 +1763,11 @@ Edit `packages/starlight-llms-txt/per-page-markdown-utils.ts`:
 - [ ] **Step 10.4: Run tests — all pass**
 
 Run:
+
 ```bash
 pnpm --filter starlight-llms-txt test
 ```
+
 Expected: all tests across all files pass.
 
 - [ ] **Step 10.5: Add a docs example demonstrating the glob**
@@ -1745,20 +1822,23 @@ If the line isn't present at all (cherry-pick might have skipped it due to confl
 
 ```ts
 perPageMarkdown: {
-	extensionStrategy: 'append',
-	excludePages: ['index*'],
+ extensionStrategy: 'append',
+ excludePages: ['index*'],
 },
 ```
 
 - [ ] **Step 10.8: Docs build smoke test**
 
 Run:
+
 ```bash
 rm -rf docs/dist && pnpm build:docs
 ls docs/dist/ | grep '\.html\.md$'
 ls docs/dist/ | grep '^index'
 ```
+
 Expected:
+
 - `configuration.html.md` and `getting-started.html.md` exist in `docs/dist/`.
 - No `index.html.md` exists (filtered by glob `index*`).
 
@@ -1788,9 +1868,10 @@ EOF
 
 ## Task 11: Release workflow wiring
 
-**Phase C1 of the spec.** Fix the repo owner guard and wire classic NPM token auth in place of the (unused) OIDC setup. Fork-only.
+**Phase C1 of the spec.** Fix the repo owner guard and wire classic npm token auth in place of the (unused) OIDC setup. Fork-only.
 
 **Files:**
+
 - Modify: `.github/workflows/release.yml`
 
 - [ ] **Step 11.1: Edit the release workflow**
@@ -1838,6 +1919,7 @@ jobs:
 ```
 
 Changes vs. the pre-edit file:
+
 - `if` guard: `delucis` → `f5-sales-demo`.
 - Remove `id-token: write` from `permissions` (no OIDC).
 - Add `registry-url: 'https://registry.npmjs.org'` to `setup-node` — writes the `.npmrc` line for auth.
@@ -1846,15 +1928,19 @@ Changes vs. the pre-edit file:
 - [ ] **Step 11.2: Validate the YAML**
 
 Run:
+
 ```bash
 python3 -c "import yaml; yaml.safe_load(open('.github/workflows/release.yml'))" && echo OK
 ```
+
 Expected: `OK`.
 
 If `actionlint` is installed:
+
 ```bash
 actionlint .github/workflows/release.yml
 ```
+
 Expected: no errors.
 
 - [ ] **Step 11.3: Commit**
@@ -1883,6 +1969,7 @@ EOF
 **Phase C2 of the spec.** All rename sites must land in one commit — any intermediate state breaks either `pnpm build:docs` (dangling workspace ref) or `pnpm test` (silent no-match on filter). Fork-only.
 
 **Files:**
+
 - Modify: `packages/starlight-llms-txt/package.json`
 - Modify: `packages/starlight-llms-txt/README.md`
 - Delete: `packages/starlight-llms-txt/.npmignore`
@@ -1899,63 +1986,63 @@ Edit `packages/starlight-llms-txt/package.json`. Full file after edit:
 
 ```json
 {
-	"name": "@f5-sales-demo/starlight-llms-txt",
-	"version": "0.8.1",
-	"license": "MIT",
-	"description": "Generate llms.txt files to train large language models on your Starlight documentation website",
-	"author": "f5-sales-demo (fork of delucis/starlight-llms-txt)",
-	"type": "module",
-	"exports": {
-		".": "./index.ts"
-	},
-	"files": [
-		"*.ts",
-		"!*.test.ts",
-		"!vitest.config.ts",
-		"CHANGELOG.md"
-	],
-	"dependencies": {
-		"@astrojs/mdx": "^5.0.3",
-		"@types/hast": "^3.0.4",
-		"@types/micromatch": "^4.0.10",
-		"github-slugger": "^2.0.0",
-		"hast-util-select": "^6.0.4",
-		"micromatch": "^4.0.8",
-		"rehype-parse": "^9.0.1",
-		"rehype-remark": "^10.0.1",
-		"remark-gfm": "^4.0.1",
-		"remark-stringify": "^11.0.0",
-		"unified": "^11.0.5",
-		"unist-util-remove": "^4.0.0"
-	},
-	"devDependencies": {
-		"@astrojs/starlight": "^0.38.3",
-		"astro": "^6.1.5",
-		"vitest": "^3.2.0"
-	},
-	"scripts": {
-		"test": "vitest run",
-		"test:watch": "vitest"
-	},
-	"peerDependencies": {
-		"@astrojs/starlight": ">=0.38.0",
-		"astro": "^6.0.0"
-	},
-	"publishConfig": {
-		"access": "public"
-	},
-	"homepage": "https://f5-sales-demo.github.io/starlight-llms-txt/",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/f5-sales-demo/starlight-llms-txt.git",
-		"directory": "packages/starlight-llms-txt"
-	},
-	"bugs": "https://github.com/f5-sales-demo/starlight-llms-txt/issues",
-	"keywords": [
-		"llms.txt",
-		"withastro",
-		"starlight"
-	]
+ "name": "@f5-sales-demo/starlight-llms-txt",
+ "version": "0.8.1",
+ "license": "MIT",
+ "description": "Generate llms.txt files to train large language models on your Starlight documentation website",
+ "author": "f5-sales-demo (fork of delucis/starlight-llms-txt)",
+ "type": "module",
+ "exports": {
+  ".": "./index.ts"
+ },
+ "files": [
+  "*.ts",
+  "!*.test.ts",
+  "!vitest.config.ts",
+  "CHANGELOG.md"
+ ],
+ "dependencies": {
+  "@astrojs/mdx": "^5.0.3",
+  "@types/hast": "^3.0.4",
+  "@types/micromatch": "^4.0.10",
+  "github-slugger": "^2.0.0",
+  "hast-util-select": "^6.0.4",
+  "micromatch": "^4.0.8",
+  "rehype-parse": "^9.0.1",
+  "rehype-remark": "^10.0.1",
+  "remark-gfm": "^4.0.1",
+  "remark-stringify": "^11.0.0",
+  "unified": "^11.0.5",
+  "unist-util-remove": "^4.0.0"
+ },
+ "devDependencies": {
+  "@astrojs/starlight": "^0.38.3",
+  "astro": "^6.1.5",
+  "vitest": "^3.2.0"
+ },
+ "scripts": {
+  "test": "vitest run",
+  "test:watch": "vitest"
+ },
+ "peerDependencies": {
+  "@astrojs/starlight": ">=0.38.0",
+  "astro": "^6.0.0"
+ },
+ "publishConfig": {
+  "access": "public"
+ },
+ "homepage": "https://f5-sales-demo.github.io/starlight-llms-txt/",
+ "repository": {
+  "type": "git",
+  "url": "https://github.com/f5-sales-demo/starlight-llms-txt.git",
+  "directory": "packages/starlight-llms-txt"
+ },
+ "bugs": "https://github.com/f5-sales-demo/starlight-llms-txt/issues",
+ "keywords": [
+  "llms.txt",
+  "withastro",
+  "starlight"
+ ]
 }
 ```
 
@@ -1964,9 +2051,11 @@ Version stays at `0.8.1` — the `.changeset/v1-0-0.md` in Task 13 will bump it 
 - [ ] **Step 12.2: Delete `.npmignore`**
 
 Run:
+
 ```bash
 rm packages/starlight-llms-txt/.npmignore
 ```
+
 With `files` in place, `.npmignore` is ignored by npm and would create a second source of truth.
 
 - [ ] **Step 12.3: Replace the README**
@@ -2015,18 +2104,21 @@ Edit `docs/package.json`:
 Edit `docs/astro.config.ts`:
 
 1. Update the import:
+
 ```diff
 - import starlightLlmsTxt from 'starlight-llms-txt';
 + import starlightLlmsTxt from '@f5-sales-demo/starlight-llms-txt';
 ```
 
 2. Update the `site` URL:
+
 ```diff
 - site: 'https://delucis.github.io',
 + site: 'https://f5-sales-demo.github.io',
 ```
 
 3. Update the GitHub links:
+
 ```diff
 -           href: 'https://github.com/delucis/starlight-llms-txt',
 +           href: 'https://github.com/f5-sales-demo/starlight-llms-txt',
@@ -2081,12 +2173,15 @@ sed -i 's|"starlight-llms-txt":|"@f5-sales-demo/starlight-llms-txt":|g' \
 ```
 
 Verify:
+
 ```bash
 head -3 .changeset/sidebar-nav.md .changeset/federated-sites.md .changeset/per-page-markdown.md
 ```
+
 Expected: each file shows `"@f5-sales-demo/starlight-llms-txt": minor`.
 
 If mavam's cherry-picked `.changeset/markdown-page-generation.md` exists with `"starlight-llms-txt"` (his PR's original changeset entry), update it the same way:
+
 ```bash
 if [ -f .changeset/markdown-page-generation.md ]; then
   sed -i 's|"starlight-llms-txt":|"@f5-sales-demo/starlight-llms-txt":|g' .changeset/markdown-page-generation.md
@@ -2096,18 +2191,23 @@ fi
 - [ ] **Step 12.10: Refresh the lockfile**
 
 Run:
+
 ```bash
 pnpm install
 ```
+
 Expected: pnpm detects the workspace dep rename, rewrites `pnpm-lock.yaml`. No errors.
 
 - [ ] **Step 12.11: Verify package pack dry-run**
 
 Run:
+
 ```bash
 pnpm pack --filter @f5-sales-demo/starlight-llms-txt --dry-run 2>&1 | grep -E '^[[:space:]]*(package:|[^[:space:]]+\.(ts|md|json))'
 ```
-Expected: `package: @f5-sales-demo/starlight-llms-txt@0.8.1`; file list includes `index.ts`, `generator.ts`, `llms.txt.ts`, `sidebar-nav.ts`, `federated-sites.ts`, `per-page-markdown-utils.ts`, `page-markdown.ts`, `page-markdown-generator.ts`, `entryToSimpleMarkdown.ts`, `utils.ts`, `types.ts`, `env.d.ts`, `llms-full.txt.ts`, `llms-small.txt.ts`, `llms-custom.txt.ts`, `CHANGELOG.md`, `README.md`, `LICENSE`, `package.json`.
+
+Expected: `package: @f5-sales-demo/starlight-llms-txt@0.8.1`.
+The file list includes `index.ts`, `generator.ts`, `llms.txt.ts`, `sidebar-nav.ts`, `federated-sites.ts`, `per-page-markdown-utils.ts`, `page-markdown.ts`, `page-markdown-generator.ts`, `entryToSimpleMarkdown.ts`, `utils.ts`, `types.ts`, `env.d.ts`, `llms-full.txt.ts`, `llms-small.txt.ts`, `llms-custom.txt.ts`, `CHANGELOG.md`, `README.md`, `LICENSE`, and `package.json`.
 
 It must NOT include: `vitest.config.ts`, `tsconfig.json`, anything under `test/`, `.npmignore`.
 
@@ -2116,23 +2216,29 @@ If any unwanted file is in the list, inspect your `files` array against Step 12.
 - [ ] **Step 12.12: Run unit tests under the new filter**
 
 Run:
+
 ```bash
 pnpm --filter @f5-sales-demo/starlight-llms-txt test
 ```
+
 Expected: all tests pass. (If you ran `pnpm test` here instead and saw "no projects matched", the root script edit in Step 12.6 was missed.)
 
 - [ ] **Step 12.13: Run the docs build**
 
 Run:
+
 ```bash
 rm -rf docs/dist && pnpm build:docs
 ```
+
 Expected: build succeeds; `docs/dist/llms.txt` exists; `docs/dist/configuration.html.md` and `docs/dist/getting-started.html.md` exist.
 
 Sanity-check the rename propagated through the build output:
+
 ```bash
 grep -l delucis docs/dist/llms.txt docs/dist/llms-full.txt
 ```
+
 Expected: no output (no files match). All URLs in the built llms.txt now use `f5-sales-demo.github.io`.
 
 - [ ] **Step 12.14: Commit everything atomically**
@@ -2176,6 +2282,7 @@ EOF
 **Phase C3 of the spec.** The release PR will consume this changeset to cut version 1.0.0 and regenerate `CHANGELOG.md`. Fork-only.
 
 **Files:**
+
 - Create: `.changeset/v1-0-0.md`
 
 - [ ] **Step 13.1: Write the changeset**
@@ -2199,9 +2306,11 @@ The `starlight-llms-txt` package is authored by Chris Swithinbank (delucis). Thi
 - [ ] **Step 13.2: Verify changeset status**
 
 Run:
+
 ```bash
 pnpm changeset status
 ```
+
 Expected output includes a line showing `@f5-sales-demo/starlight-llms-txt` slated for a **major** bump. The aggregate of the four changesets (`sidebar-nav.md`, `federated-sites.md`, `per-page-markdown.md`, and `v1-0-0.md`) resolves to the highest bump type, which is `major` from `v1-0-0.md`.
 
 If the status output lists additional packages (e.g. `starlight-llms-txt-docs`), that's OK as long as `starlight-llms-txt-docs` shows up under `ignore` — it should, per `.changeset/config.json`'s `"ignore": ["starlight-llms-txt-docs"]` entry.
@@ -2229,12 +2338,15 @@ EOF
 - [ ] **Step 14.1: Pre-flight — confirm repo settings allow merge commits**
 
 Run:
+
 ```bash
 gh api repos/f5-sales-demo/starlight-llms-txt --jq '.allow_merge_commit,.allow_squash_merge'
 ```
+
 Expected: `true` then `true` (or at least the first — `allow_merge_commit: true`).
 
 If `allow_merge_commit` is `false`: flip the setting via the repo's web UI (Settings → General → Pull Requests) or via API:
+
 ```bash
 gh api -X PATCH repos/f5-sales-demo/starlight-llms-txt -f allow_merge_commit=true
 ```
@@ -2242,14 +2354,17 @@ gh api -X PATCH repos/f5-sales-demo/starlight-llms-txt -f allow_merge_commit=tru
 - [ ] **Step 14.2: Push the branch**
 
 Run:
+
 ```bash
 git push -u origin feature/enhancements-and-publishing
 ```
+
 Expected: new remote branch created; tracking set up.
 
 - [ ] **Step 14.3: Open the PR**
 
 Run:
+
 ```bash
 gh pr create \
   --repo f5-sales-demo/starlight-llms-txt \
@@ -2299,9 +2414,11 @@ Expected: PR number printed; URL emitted.
 - [ ] **Step 14.4: Wait for CI**
 
 Run:
+
 ```bash
 gh pr checks --watch
 ```
+
 Expected: `test` and `smoke` both pass. `Release` will not run on PRs (it's gated on `on: push: branches: main`).
 
 **If CI fails:** fix-forward. `test` failures indicate a unit-test regression — reproduce with `pnpm --filter @f5-sales-demo/starlight-llms-txt test`, fix, commit, push. `smoke` failures indicate a docs build regression — reproduce with `pnpm build:docs`, fix, commit, push. Do not merge the PR until both jobs are green.
@@ -2327,35 +2444,44 @@ Expected: PR merged; branch `feature/enhancements-and-publishing` auto-deleted f
 - [ ] **Step 15.1: Confirm the release workflow ran**
 
 Run:
+
 ```bash
 gh run list --workflow Release --repo f5-sales-demo/starlight-llms-txt --limit 3
 ```
+
 Expected: the most recent run shows the Task 14 merge as its trigger and status `success` or `completed`.
 
 **If the run was skipped with reason "if condition not met":** the owner guard in the release workflow didn't match. Recheck Task 11's edit applied correctly.
 
 **If the run failed:** open the failed run:
+
 ```bash
 gh run view --log --repo f5-sales-demo/starlight-llms-txt
 ```
+
 Most likely causes at this stage: the release PR creation step failed because there were no changesets (shouldn't be the case — Tasks 4, 6, 10, 13 all added changesets) or because the changesets reference the pre-rename name (caught in Task 12.9). Fix forward and push to `main`.
 
 - [ ] **Step 15.2: Find the release PR**
 
 Run:
+
 ```bash
 gh pr list --repo f5-sales-demo/starlight-llms-txt --search '"[ci] release" in:title' --limit 1
 ```
+
 Expected: one open PR titled `[ci] release` opened by `github-actions[bot]`.
 
 - [ ] **Step 15.3: Inspect the release PR**
 
 Run:
+
 ```bash
 PR_NUM=$(gh pr list --repo f5-sales-demo/starlight-llms-txt --search '"[ci] release" in:title' --json number --jq '.[0].number')
 gh pr view $PR_NUM --repo f5-sales-demo/starlight-llms-txt
 ```
+
 Expected contents:
+
 - `packages/starlight-llms-txt/package.json` version bumped `0.8.1` → `1.0.0`.
 - `packages/starlight-llms-txt/CHANGELOG.md` regenerated with a 1.0.0 section listing the four feature bullets.
 - All `.changeset/*.md` files deleted (consumed).
@@ -2368,6 +2494,7 @@ If any changeset `.md` file is still present, the release workflow didn't consum
 ```bash
 gh pr merge $PR_NUM --merge --repo f5-sales-demo/starlight-llms-txt
 ```
+
 Expected: merge succeeds; this triggers the publish step of the release workflow on the next run.
 
 ---
@@ -2379,10 +2506,13 @@ Expected: merge succeeds; this triggers the publish step of the release workflow
 - [ ] **Step 16.1: Watch the publish run**
 
 Run:
+
 ```bash
 gh run list --workflow Release --repo f5-sales-demo/starlight-llms-txt --limit 1
 ```
+
 Copy the run ID and stream logs:
+
 ```bash
 gh run view <run-id> --log --repo f5-sales-demo/starlight-llms-txt
 ```
@@ -2398,35 +2528,44 @@ Expected: the `changesets/action` step logs `🦋 info @f5-sales-demo/starlight-
 - [ ] **Step 16.2: Verify on the npm registry**
 
 Run:
+
 ```bash
 npm view @f5-sales-demo/starlight-llms-txt version
 ```
+
 Expected: `1.0.0`.
 
 Inspect the shipped tarball contents:
+
 ```bash
 npm view @f5-sales-demo/starlight-llms-txt files
 ```
+
 Expected: no `test/`, no `vitest.config.ts`, no `.npmignore`, no `tsconfig.json`. Yes `README.md`, `LICENSE`, `package.json`, `CHANGELOG.md`, all `.ts` source files.
 
 - [ ] **Step 16.3: Verify the GitHub release**
 
 Run:
+
 ```bash
 gh release view "@f5-sales-demo/starlight-llms-txt@1.0.0" --repo f5-sales-demo/starlight-llms-txt
 ```
+
 Expected: release created by `changesets/changelog-github` with the 1.0.0 changelog body.
 
 - [ ] **Step 16.4: Smoke test the published package**
 
 Run (in a scratch directory outside the worktree):
+
 ```bash
 mkdir -p /tmp/smoke-install && cd /tmp/smoke-install
 npm init -y >/dev/null
 npm install @f5-sales-demo/starlight-llms-txt@1.0.0 --save-peer 2>&1 | tail -5
 ls node_modules/@f5-sales-demo/starlight-llms-txt/
 ```
+
 Expected: installs without errors; directory contains the `.ts` source files and `README.md`. Cleanup:
+
 ```bash
 cd - && rm -rf /tmp/smoke-install
 ```
@@ -2436,9 +2575,11 @@ cd - && rm -rf /tmp/smoke-install
 These are not commits — surface them to the user:
 
 1. **Rotate `NPM_TOKEN`.** The token value appeared in the brainstorming transcript. Rotate at <https://www.npmjs.com/settings/robinmordasiewicz/tokens>, update the GH Actions secret:
+
    ```bash
    printf '%s' '<new-token>' | gh secret set NPM_TOKEN --repo f5-sales-demo/starlight-llms-txt --app actions
    ```
+
 2. **Close/comment on xcsh#223** with a link to the released package version.
 3. **Begin Steps 2–6 of xcsh#223** in their respective repos (docs-builder, docs-theme, docs portal, product repos, xcsh itself) — separate worktrees, separate plans.
 4. **Leave the upstream PR unsubmitted** until the package has been validated across the f5-sales-demo fleet (per the saved preference).
