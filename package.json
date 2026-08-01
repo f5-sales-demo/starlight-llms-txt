@@ -19,7 +19,7 @@
   "bugs": "https://github.com/delucis/starlight-llms-txt/issues",
   "scripts": {
     "build:docs": "pnpm -F starlight-llms-txt-docs build",
-    "ci-version": "changeset version && pnpm install --no-frozen-lockfile",
+    "ci-version": "changeset version && pnpm install --no-frozen-lockfile --config.manage-package-manager-versions=false",
     "ci-publish": "changeset publish",
     "test": "pnpm --filter @f5-sales-demo/starlight-llms-txt test"
   },
