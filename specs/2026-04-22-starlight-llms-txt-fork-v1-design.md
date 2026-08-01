@@ -514,7 +514,7 @@ Any of (1)–(3) failing will produce a `403 Forbidden` or `404 Not Found` durin
 
 Delete `packages/starlight-llms-txt/.npmignore` — npm ignores it when `files` is set, and keeping both creates two sources of truth.
 
-## §7.9 NPM token secret
+## §7.9 npm token secret
 
 Already created during brainstorming. Verified on `f5-sales-demo/starlight-llms-txt`:
 
