@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 
 import { describe, expect, test } from 'vitest';
@@ -20,5 +21,19 @@ describe('Astro dependency compatibility', () => {
     expect(docsManifest.dependencies.astro).toMatch(/^\^7\./);
     expect(docsManifest.dependencies['@astrojs/starlight']).toMatch(/^\^0\.41\./);
     expect(docsManifest.engines.node).toBe('>=22.12.0');
+  });
+});
+
+describe('release versioning', () => {
+  test('keeps one canonical committed workspace lockfile document', async () => {
+    const rootManifest = await readPackage(new URL('../../../package.json', import.meta.url));
+    const lockfile = execFileSync('git', ['show', 'HEAD:pnpm-lock.yaml'], {
+      cwd: new URL('../../../', import.meta.url),
+      encoding: 'utf8',
+    });
+
+    expect(rootManifest.scripts['ci-version']).toContain('--config.manage-package-manager-versions=false');
+    expect(lockfile.startsWith('lockfileVersion:')).toBe(true);
+    expect(lockfile.match(/^lockfileVersion:/gm)).toHaveLength(1);
   });
 });
