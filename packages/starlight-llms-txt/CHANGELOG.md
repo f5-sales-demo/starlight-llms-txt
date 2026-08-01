@@ -1,5 +1,11 @@
 # starlight-llms-txt
 
+## 1.4.1
+
+### Patch Changes
+
+- [#363](https://github.com/f5-sales-demo/starlight-llms-txt/pull/363) [`e64f25f`](https://github.com/f5-sales-demo/starlight-llms-txt/commit/e64f25fe44cce873f0c47319b8577b2e4352dd6a) Thanks [@robinmordasiewicz](https://github.com/robinmordasiewicz)! - Align the runtime MDX integration and development toolchain with Astro 7 so consumers no longer need a dependency override.
+
 ## 1.4.0
 
 ### Minor Changes
