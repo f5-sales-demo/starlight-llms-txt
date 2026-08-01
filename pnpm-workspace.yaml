@@ -2,6 +2,11 @@ packages:
   - 'docs'
   - 'packages/*'
 
-onlyBuiltDependencies:
-  - esbuild
-  - sharp
+allowBuilds:
+  esbuild: true
+  sharp: true
+
+# Exact, integrity-locked direct dependency reviewed against 0.41.5.
+# The signed, provenance-attested patch only adds the Forgejo icon.
+minimumReleaseAgeExclude:
+  - '@astrojs/starlight@0.41.6'
