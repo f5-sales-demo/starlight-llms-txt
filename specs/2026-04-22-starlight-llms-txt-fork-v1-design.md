@@ -9,7 +9,8 @@ relates-to: f5-sales-demo/xcsh#223
 
 # Summary
 
-Ship a 1.0.0 release of `@f5-sales-demo/starlight-llms-txt` — a fork of `delucis/starlight-llms-txt@0.8.1` — adding three options used by the f5-sales-demo documentation federation: `perPageMarkdown` (rebased from upstream PR #32), `sidebarNav` with automatic frontmatter descriptions, and `federatedSites`. Upstream submission is explicitly deferred until the fork is validated in production across the 25 product repos.
+Ship a 1.0.0 release of `@f5-sales-demo/starlight-llms-txt` — a fork of `delucis/starlight-llms-txt@0.8.1` — adding three options used by the f5-sales-demo documentation federation: `perPageMarkdown` (rebased from upstream PR #32), `sidebarNav` with automatic frontmatter descriptions, and `federatedSites`.
+Upstream submission is explicitly deferred until the fork is validated in production across the 25 product repos.
 
 # Context
 
@@ -147,7 +148,8 @@ Sort order: `doc.data.sidebar.order ?? Infinity`, then `doc.data.title`. Same as
 
 The existing `promote` / `demote` options apply to `sidebarNav` ordering the same way they apply to content ordering — one source of truth for document priority.
 
-**Automatic descriptions.** When `doc.data.description` is set, the entry renders as `- [Title](url): description`; otherwise `- [Title](url)`. No separate `useDescriptions` option — the description is already public (Starlight emits it in `<meta>` tags and `generator.ts:57` inlines it into `llms-full.txt`), so inclusion in the nav tree adds no new privacy surface. Gating it behind a flag would be API noise with no observable behavior difference when absent.
+**Automatic descriptions.** When `doc.data.description` is set, the entry renders as `- [Title](url): description`; otherwise `- [Title](url)`. No separate `useDescriptions` option — the description is already public (Starlight emits it in `<meta>` tags and `generator.ts:57` inlines it into `llms-full.txt`), so inclusion in the nav tree adds no new privacy surface.
+Gating it behind a flag would be API noise with no observable behavior difference when absent.
 
 **Output shape** (matches xcsh#223):
 
@@ -512,7 +514,7 @@ Any of (1)–(3) failing will produce a `403 Forbidden` or `404 Not Found` durin
 
 Delete `packages/starlight-llms-txt/.npmignore` — npm ignores it when `files` is set, and keeping both creates two sources of truth.
 
-## §7.9 NPM token secret
+## §7.9 npm token secret
 
 Already created during brainstorming. Verified on `f5-sales-demo/starlight-llms-txt`:
 
