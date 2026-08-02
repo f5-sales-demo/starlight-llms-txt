@@ -11,17 +11,17 @@ import { defineConfig } from 'astro/config';
 import starlightLlmsTxt from 'starlight-llms-txt';
 
 export default defineConfig({
-	site: 'https://example.com/',
-	integrations: [
-		starlight({
-			title: 'My Docs',
-			plugins: [
-				starlightLlmsTxt({
-					projectName: 'Very Cool Tool',
-				}),
-			],
-		}),
-	],
+ site: 'https://example.com/',
+ integrations: [
+  starlight({
+   title: 'My Docs',
+   plugins: [
+    starlightLlmsTxt({
+     projectName: 'Very Cool Tool',
+    }),
+   ],
+  }),
+ ],
 });
 ```
 
@@ -95,16 +95,16 @@ Glob patterns are processed using [`micromatch`’s matching features](https://g
 
 ```js
 customSets: [
-	{
-		label: 'Reference',
-		description: 'full reference documentation for my project',
-		paths: ['reference/**'],
-	},
-	{
-		label: 'Tutorial',
-		description: 'step-by-step tutorial for how to build a new project',
-		paths: ['tutorial/**'],
-	},
+ {
+  label: 'Reference',
+  description: 'full reference documentation for my project',
+  paths: ['reference/**'],
+ },
+ {
+  label: 'Tutorial',
+  description: 'step-by-step tutorial for how to build a new project',
+  paths: ['tutorial/**'],
+ },
 ];
 ```
 
@@ -177,8 +177,8 @@ In the following example, the default exclusion of notes is overridden and a cus
 
 ```ts
 minify: {
-	note: false,
-	customSelectors: ['.my-page-nav'],
+ note: false,
+ customSelectors: ['.my-page-nav'],
 },
 ```
 
@@ -280,8 +280,8 @@ TS config example:
 
 ````ts
 federatedSites: [
-	{ label: 'WAF', url: 'https://example.com/waf/llms.txt', description: 'Web application firewall' },
-	{ label: 'CSD', url: 'https://example.com/csd/llms.txt', description: 'Client-side defense' },
+ { label: 'WAF', url: 'https://example.com/waf/llms.txt', description: 'Web application firewall' },
+ { label: 'CSD', url: 'https://example.com/csd/llms.txt', description: 'Client-side defense' },
 ]
 ````
 
@@ -315,8 +315,8 @@ perPageMarkdown: true,
 ```js
 // Enable with custom configuration
 perPageMarkdown: {
-	extensionStrategy: 'replace',
-	excludePages: ['404', 'index*'],
+ extensionStrategy: 'replace',
+ excludePages: ['404', 'index*'],
 },
 ```
 
