@@ -7,14 +7,14 @@ supersedes: —
 relates-to: f5-sales-demo/xcsh#223
 ---
 
-# Summary
+## Summary
 
 Ship a 1.0.0 release of `@f5-sales-demo/starlight-llms-txt` — a fork of `delucis/starlight-llms-txt@0.8.1` — adding three options used by the f5-sales-demo documentation federation: `perPageMarkdown` (rebased from upstream PR #32), `sidebarNav` with automatic frontmatter descriptions, and `federatedSites`.
 Upstream submission is explicitly deferred until the fork is validated in production across the 25 product repos.
 
-# Context
+## Context
 
-## Why a fork exists
+### Why a fork exists
 
 The upstream plugin (v0.8.1) covers ~80% of what `f5-sales-demo` docs federation needs. The remaining ~20% is three features that:
 
@@ -22,11 +22,11 @@ The upstream plugin (v0.8.1) covers ~80% of what `f5-sales-demo` docs federation
 - Exist partially as an 8-month-stalled upstream PR (delucis#32 — perPageMarkdown).
 - Are needed now to support the xcsh cascading llms.txt knowledge hierarchy ([xcsh#223](https://github.com/f5-sales-demo/xcsh/issues/223)).
 
-## Scope of this spec
+### Scope of this spec
 
 This spec covers **only Step 1 of xcsh#223** — the plugin fork. Steps 2–6 (docs-builder dependency swap, docs-theme config wiring, docs portal federation, product-repo `llms-config.json`, xcsh prompt cue) are downstream consumers that depend on this release but are each their own work stream in their own repos.
 
-## Starting state
+### Starting state
 
 - Repo: `f5-sales-demo/starlight-llms-txt`, forked from `delucis/starlight-llms-txt`.
 - Branch: `feature/enhancements-and-publishing` (off `main`).
@@ -36,10 +36,10 @@ This spec covers **only Step 1 of xcsh#223** — the plugin fork. Steps 2–6 (d
 - CI smoke test exists at `.github/workflows/ci.yml` — `pnpm --filter ./docs build`.
 - Changesets tooling already wired (`.changeset/config.json`, `ci-version` / `ci-publish` scripts).
 
-# Locked Decisions
+## Locked Decisions
 
 | # | Decision | Chosen |
-|---|---|---|
+| --- | --- | --- |
 | 1 | Fork posture | Upstream-first design, PRs submitted to `delucis/` **only after production validation**; fork is temporary in principle, operating indefinitely until upstream catches up. |
 | 2 | Interim publish mechanism | `@f5-sales-demo/starlight-llms-txt` on npmjs as a rename-only fork (plus feature commits). |
 | 3 | Test location | Fork-only. Upstream PRs (when submitted) will contain no tests, matching delucis house style. |
@@ -58,21 +58,21 @@ This spec covers **only Step 1 of xcsh#223** — the plugin fork. Steps 2–6 (d
 | 16 | Test fixtures | Inline in each test file — no shared `fixtures/` directory. |
 | 17 | Provenance / OIDC signing | Out of scope for v1 (requires `id-token: write`, conflicts with token-auth choice). |
 
-# Architecture & Commit Topology
+## Architecture & Commit Topology
 
 Two commit classes coexist on the implementation branch:
 
 - **Upstream-candidate commits** — byte-for-byte cherry-pickable onto `delucis/main` at upstream-submission time.
 - **Fork-only commits** — publishing glue, tests, CI, package rename; never going upstream.
 
-## Upstream-candidate set
+### Upstream-candidate set
 
 - Rebased commits from mavam's `topic/markdown-pages` (PR delucis#32) with `Co-Authored-By: Matthias Vallentin <53797+mavam@users.noreply.github.com>` preserved.
 - Implementation of `sidebarNav`, including automatic frontmatter-description inlining.
 - Implementation of `federatedSites`.
 - Types additions and user-facing docs updates for each feature.
 
-## Fork-only set
+### Fork-only set
 
 - Package rename: `starlight-llms-txt` → `@f5-sales-demo/starlight-llms-txt`.
 - Repository/homepage/bugs metadata pointing at the fork.
@@ -87,9 +87,9 @@ Two commit classes coexist on the implementation branch:
 
 Upstream-candidate commits must not touch `package.json#name`, release workflow, changelog pointer, or README — those are strictly fork-only concerns. If an upstream PR is ever opened from this branch, it is produced by cherry-picking the upstream-candidate set onto a fresh branch off `delucis/main`.
 
-# Features
+## Features
 
-## Feature 1 — `perPageMarkdown` (rebase of delucis#32)
+### Feature 1 — `perPageMarkdown` (rebase of delucis#32)
 
 **Source.** [tenzir/starlight-llms-txt](https://github.com/tenzir/starlight-llms-txt/tree/topic/markdown-pages), head `2a1ae6d259cee07d7466281550b1103b3e48fc5f` at spec time (17 commits; `mergeable_state: dirty` against `delucis/main`). Verify the head SHA has not moved before beginning cherry-pick — stale SHAs produce empty picks or unexpected conflicts.
 
@@ -109,7 +109,7 @@ perPageMarkdown?: boolean | {
 **Files (upstream-candidate).**
 
 | File | Change | Source |
-|---|---|---|
+| --- | --- | --- |
 | `packages/starlight-llms-txt/types.ts` | +~45 — add `perPageMarkdown` to options and context | PR #32 |
 | `packages/starlight-llms-txt/index.ts` | +~25 — inject `/[...slug].md` route when enabled; pass resolved config via virtual module | PR #32 |
 | `packages/starlight-llms-txt/page-markdown.ts` | +74 (new) — route handler with `getStaticPaths` | PR #32 |
@@ -130,7 +130,7 @@ perPageMarkdown?: boolean | {
 - `shouldExcludePage('index', ['index*'])` → true (glob).
 - `shouldExcludePage('guides/intro', ['index*'])` → false.
 
-## Feature 2 — `sidebarNav`
+### Feature 2 — `sidebarNav`
 
 **Config shape.** Binary flag, no nested options.
 
@@ -175,7 +175,7 @@ Gating it behind a flag would be API noise with no observable behavior differenc
 **Files (upstream-candidate).**
 
 | File | Change |
-|---|---|
+| --- | --- |
 | `packages/starlight-llms-txt/types.ts` | +~6 — `sidebarNav?: boolean` in options, `sidebarNav: boolean` in context |
 | `packages/starlight-llms-txt/index.ts` | +1 — pass `opts.sidebarNav ?? false` into `projectContext` |
 | `packages/starlight-llms-txt/sidebar-nav.ts` | new — `buildSectionTree(docs) → SectionNode[]`, `renderSectionTree(tree, site) → string` |
@@ -196,7 +196,7 @@ Gating it behind a flag would be API noise with no observable behavior differenc
 
 **Deferred follow-up.** If Starlight's `config.sidebar` is present and contains explicit group labels (object form, not slug-only), those labels are better group headings than title-cased path segments. Not in v1; will be a post-v1 enhancement keyed off a concrete demo where it matters.
 
-## Feature 3 — `federatedSites`
+### Feature 3 — `federatedSites`
 
 **Config shape.** Mirrors existing `optionalLinks` exactly:
 
@@ -210,7 +210,7 @@ federatedSites?: Array<{
 
 **Placement.** After `## Sections`, before `## Notes`:
 
-```
+```text
 # Title
 > description
 ## Documentation Sets     ← this site's aggregate files
@@ -227,7 +227,7 @@ Ordering reflects cost gradient — an LLM that resolves its question in local `
 **Files (upstream-candidate).**
 
 | File | Change |
-|---|---|
+| --- | --- |
 | `packages/starlight-llms-txt/types.ts` | +~10 — option type + context field |
 | `packages/starlight-llms-txt/index.ts` | +1 — pass `opts.federatedSites ?? []` into context |
 | `packages/starlight-llms-txt/federated-sites.ts` | new — `renderFederatedSites(sites) → string` (returns `''` when empty) |
@@ -245,18 +245,18 @@ Ordering reflects cost gradient — an LLM that resolves its question in local `
 
 **Non-validation.** No `url` validation — consistent with `optionalLinks`. Duplicates not deduped. Order preserved as given.
 
-# Testing Strategy (fork-only)
+## Testing Strategy (fork-only)
 
-## Framework
+### Framework
 
 Vitest. Matches the Astro ecosystem (Astro and Starlight themselves use Vitest); native ESM + TypeScript; built-in snapshots and `vi.mock`.
 
-## Scope
+### Scope
 
 **Unit-tested (pure helpers):**
 
 | Helper | File |
-|---|---|
+| --- | --- |
 | `buildSectionTree`, `renderSectionTree` | `sidebar-nav.ts` |
 | `renderFederatedSites` | `federated-sites.ts` |
 | `resolvePerPageMarkdownOptions`, `slugToPath`, `shouldExcludePage` | `per-page-markdown-utils.ts` |
@@ -267,9 +267,9 @@ Vitest. Matches the Astro ecosystem (Astro and Starlight themselves use Vitest);
 - Route handlers (`llms.txt.ts`, `llms-full.txt.ts`, `llms-small.txt.ts`, `llms-custom.txt.ts`, `page-markdown.ts`) — call `getCollection`; covered by docs build.
 - `entryToSimpleMarkdown.ts` — requires a running Astro container; covered by docs build.
 
-## Layout
+### Layout
 
-```
+```text
 packages/starlight-llms-txt/
 ├── sidebar-nav.ts
 ├── federated-sites.ts
@@ -284,11 +284,11 @@ packages/starlight-llms-txt/
 
 Tests live inside the package subtree so the package is self-contained for any future consumer (including a future upstream).
 
-## Fixtures
+### Fixtures
 
 Inline in each test file. Each test constructs the minimal `doc`-shaped object with only the fields the helper under test accesses, cast to a structural type. No shared `fixtures/` directory — avoids coupling between tests that should be independent.
 
-## Package changes
+### Package changes
 
 ```jsonc
 // packages/starlight-llms-txt/package.json
@@ -311,7 +311,7 @@ Root `package.json`:
 }
 ```
 
-## Vitest config
+### Vitest config
 
 `packages/starlight-llms-txt/vitest.config.ts`:
 
@@ -327,7 +327,7 @@ export default defineConfig({
 
 No jsdom, no globals, no setup files.
 
-## CI integration
+### CI integration
 
 `.github/workflows/ci.yml` gains a `test` job running in parallel with the existing `smoke` job. Both must pass on pull requests.
 
@@ -349,13 +349,13 @@ jobs:
     # existing job unchanged
 ```
 
-## TDD flow during implementation
+### TDD flow during implementation
 
 Each helper is authored after its test file exists and fails. Red → green → refactor per function. The implementation plan handoff will enforce this by making each "write test" step precede its paired "write implementation" step.
 
-# Publishing Infrastructure (fork-only)
+## Publishing Infrastructure (fork-only)
 
-## §7.1 Package rename
+### §7.1 Package rename
 
 ```diff
 // packages/starlight-llms-txt/package.json
@@ -376,7 +376,7 @@ Each helper is authored after its test file exists and fails. Red → green → 
   "publishConfig": { "access": "public" }
 ```
 
-## §7.2 Release workflow
+### §7.2 Release workflow
 
 `.github/workflows/release.yml`:
 
@@ -414,7 +414,7 @@ Each helper is authored after its test file exists and fails. Red → green → 
 
 `id-token: write` removed (no OIDC). `registry-url` writes the `.npmrc` line for npmjs auth. Both `NPM_TOKEN` (consumed by changesets) and `NODE_AUTH_TOKEN` (consumed by `setup-node`'s generated `.npmrc`) are set — harmless redundancy covering both consumers.
 
-## §7.3 Changesets config
+### §7.3 Changesets config
 
 `.changeset/config.json`:
 
@@ -425,7 +425,7 @@ Each helper is authored after its test file exists and fails. Red → green → 
 
 `ignore: ["starlight-llms-txt-docs"]` stays.
 
-## §7.4 Docs site URL
+### §7.4 Docs site URL
 
 `docs/astro.config.ts`:
 
@@ -436,7 +436,7 @@ Each helper is authored after its test file exists and fails. Red → green → 
 
 Also update hardcoded links inside the same file (`social.github.href`, `editLink.baseUrl`) to point at `f5-sales-demo/starlight-llms-txt`.
 
-## §7.5 Initial 1.0.0 changeset
+### §7.5 Initial 1.0.0 changeset
 
 `.changeset/v1-0-0.md`:
 
@@ -456,7 +456,7 @@ The `starlight-llms-txt` package is authored by Chris Swithinbank (delucis). Thi
 
 One entry covering all four features. changesets emits a single 1.0.0 release PR.
 
-## §7.6 README
+### §7.6 README
 
 Replace `packages/starlight-llms-txt/README.md`:
 
@@ -484,7 +484,7 @@ MIT — copyright Chris Swithinbank, fork modifications by f5-sales-demo contrib
 
 `LICENSE` stays byte-identical to upstream.
 
-## §7.7 Pre-publish sanity checks (manual, outside this spec's automated scope)
+### §7.7 Pre-publish sanity checks (manual, outside this spec's automated scope)
 
 Before the first `changesets publish` runs, confirm:
 
@@ -495,7 +495,7 @@ Before the first `changesets publish` runs, confirm:
 
 Any of (1)–(3) failing will produce a `403 Forbidden` or `404 Not Found` during publish. Fix and retry by pushing any commit to `main`.
 
-## §7.8 `files` array
+### §7.8 `files` array
 
 ```jsonc
 // packages/starlight-llms-txt/package.json
@@ -514,22 +514,22 @@ Any of (1)–(3) failing will produce a `403 Forbidden` or `404 Not Found` durin
 
 Delete `packages/starlight-llms-txt/.npmignore` — npm ignores it when `files` is set, and keeping both creates two sources of truth.
 
-## §7.9 npm token secret
+### §7.9 npm token secret
 
 Already created during brainstorming. Verified on `f5-sales-demo/starlight-llms-txt`:
 
-```
+```text
 $ gh secret list --repo f5-sales-demo/starlight-llms-txt --app actions
 NPM_TOKEN    2026-04-22T05:17:48Z
 ```
 
 Token belongs to npm user `robinmordasiewicz`. **The token value appeared in plaintext in the brainstorming transcript and must be rotated after the first successful release.**
 
-# Release Plan & Sequencing
+## Release Plan & Sequencing
 
 Single linear implementation sequence on `feature/enhancements-and-publishing`. Phase boundaries are the only defensible order — each phase has a verifiable exit state and no phase depends on unverified output from a later phase.
 
-## Phase A — Fork-only scaffolding
+### Phase A — Fork-only scaffolding
 
 **A1. Vitest harness.** Commit: `chore(test): add vitest harness`.
 
@@ -540,7 +540,7 @@ Single linear implementation sequence on `feature/enhancements-and-publishing`. 
 - Add `test` job to `.github/workflows/ci.yml`.
 - **Exit criteria:** `pnpm test` green locally; CI test job green on the push.
 
-## Phase B — Features (TDD: test → implementation)
+### Phase B — Features (TDD: test → implementation)
 
 ### B1. `sidebarNav` + auto-descriptions
 
@@ -565,7 +565,7 @@ Single linear implementation sequence on `feature/enhancements-and-publishing`. 
 - `feat(per-page-markdown): swap literal match for micromatch in excludePages` — tests green.
 - **Exit criteria:** tests green; docs build produces per-page `.md` files (`docs/dist/getting-started.html.md`, `docs/dist/configuration.html.md`); honors `excludePages: ['index*']`.
 
-## Phase C — Fork infra (publish-readiness)
+### Phase C — Fork infra (publish-readiness)
 
 ### C1. Release workflow wiring
 
@@ -599,7 +599,7 @@ Commit: `docs(changeset): 1.0.0 initial fork release`.
 - Add `.changeset/v1-0-0.md` per §7.5.
 - **Exit criteria:** `pnpm changeset status` shows a pending major bump to `@f5-sales-demo/starlight-llms-txt`.
 
-## Phase D — Merge & release
+### Phase D — Merge & release
 
 ### D1. PR to `main`
 
@@ -621,13 +621,13 @@ Merging the release PR re-triggers the release workflow. `changesets/action` cal
 
 - **Exit criteria:** `npm view @f5-sales-demo/starlight-llms-txt` shows 1.0.0; tag `@f5-sales-demo/starlight-llms-txt@1.0.0` pushed; GitHub Release created by `@changesets/changelog-github`.
 
-## Rollback / retry
+### Rollback / retry
 
 - Phase A–C CI failures: fix-forward on the same branch, no reset.
 - D3 publish failure (403/404): the release PR is already merged and CHANGELOG/tags exist. Fix the underlying issue (npm org membership, token scope, name squatting) and re-trigger the workflow by pushing any commit to `main`. `changesets/action` is idempotent for already-bumped but unpublished versions.
 - 1.0.0 ships broken: cut 1.0.1 via a new changeset. Do **not** `npm unpublish` — breaks any consumer who pinned 1.0.0 in the 72-hour window.
 
-# Non-Goals
+## Non-Goals
 
 - Any changes to `docs-builder`, `docs-theme`, `docs`, `docs-control`, `xcsh`, or product repos. All downstream consumers, all separate worktrees.
 - Upstream PR submission to `delucis/starlight-llms-txt`. Deferred per saved preference until production-validated across the f5-sales-demo fleet.
@@ -635,7 +635,7 @@ Merging the release PR re-triggers the release workflow. `changesets/action` cal
 - Coverage reporting.
 - Removing or replacing PR #32's 17-commit history with a squash. We replay their history to preserve bisectability for mavam.
 
-# Deferred / Follow-ups
+## Deferred / Follow-ups
 
 Tracked for post-v1:
 
@@ -645,7 +645,7 @@ Tracked for post-v1:
 - Coverage reporting (`@vitest/coverage-v8`). Add when a regression warrants it.
 - Rotate `NPM_TOKEN` after first successful release.
 
-# References
+## References
 
 - [llms.txt specification](https://llmstxt.org/)
 - [xcsh#223 — cascading llms.txt knowledge hierarchy](https://github.com/f5-sales-demo/xcsh/issues/223)

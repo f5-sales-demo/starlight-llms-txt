@@ -19,7 +19,7 @@
 ### New files (upstream-candidate)
 
 | Path | Purpose |
-|---|---|
+| --- | --- |
 | `packages/starlight-llms-txt/sidebar-nav.ts` | Pure helpers: `buildSectionTree`, `renderSectionTree` |
 | `packages/starlight-llms-txt/federated-sites.ts` | Pure helper: `renderFederatedSites` |
 | `packages/starlight-llms-txt/per-page-markdown-utils.ts` | Pure helpers: `resolvePerPageMarkdownOptions`, `slugToPath`, `shouldExcludePage` |
@@ -32,7 +32,7 @@
 ### New files (fork-only)
 
 | Path | Purpose |
-|---|---|
+| --- | --- |
 | `packages/starlight-llms-txt/vitest.config.ts` | Vitest config |
 | `packages/starlight-llms-txt/test/sidebar-nav.test.ts` | Unit tests |
 | `packages/starlight-llms-txt/test/federated-sites.test.ts` | Unit tests |
@@ -42,7 +42,7 @@
 ### Modified files (upstream-candidate)
 
 | Path | Change |
-|---|---|
+| --- | --- |
 | `packages/starlight-llms-txt/types.ts` | Add `sidebarNav`, `federatedSites`, `perPageMarkdown` options + context fields |
 | `packages/starlight-llms-txt/index.ts` | Pass new options into `projectContext`; inject per-page markdown route when enabled |
 | `packages/starlight-llms-txt/llms.txt.ts` | Render `## Sections` and `## Federated Sites` blocks |
@@ -53,7 +53,7 @@
 ### Modified files (fork-only)
 
 | Path | Change |
-|---|---|
+| --- | --- |
 | `packages/starlight-llms-txt/package.json` | Rename to `@f5-sales-demo/starlight-llms-txt`, add `files` array, add test scripts, add `vitest` devDep |
 | `packages/starlight-llms-txt/README.md` | Replace with fork notice |
 | `packages/starlight-llms-txt/.npmignore` | Delete (superseded by `files` array) |
@@ -668,7 +668,7 @@ cat packages/starlight-llms-txt/test/__snapshots__/sidebar-nav.test.ts.snap
 
 Expected content (snapshot is Vitest's pretty-printed form; the exact serialization will be a single string matching the xcsh#223 reference block):
 
-```
+```ts
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`renderSectionTree > matches the xcsh#223 reference output 1`] = `
@@ -886,8 +886,6 @@ Each entry's `description` (from frontmatter) is appended automatically when pre
 
 Respects the `promote` and `demote` options for ordering. Draft pages and non-default locales are excluded.
 
-```
-
 - [ ] **Step 4.6: Add changeset**
 
 Create `.changeset/sidebar-nav.md`:
@@ -931,7 +929,7 @@ grep -A 20 '^## Sections' docs/dist/llms.txt
 
 Expected: a `## Sections` block listing the docs site's pages (`getting-started`, `configuration`). Example:
 
-```
+```markdown
 ## Sections
 
 - [Configuration](https://f5-sales-demo.github.io/starlight-llms-txt/configuration/)
@@ -1079,7 +1077,7 @@ cat packages/starlight-llms-txt/test/__snapshots__/federated-sites.test.ts.snap
 
 Expected content:
 
-```
+```ts
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`renderFederatedSites > matches the xcsh#223 reference output 1`] = `
@@ -1179,7 +1177,7 @@ Edit `packages/starlight-llms-txt/llms.txt.ts`:
 + import { renderFederatedSites } from './federated-sites';
 ```
 
-2. Add the rendering block immediately after the `sidebarNav` block (before `segments.push(\`## Notes\`);`):
+1. Add the rendering block immediately after the `sidebarNav` block (before `segments.push(\`## Notes\`);`):
 
 ```ts
  // Federated sites — Tier 1 routing.
@@ -1221,8 +1219,6 @@ Output:
 
 The block is placed between `## Sections` and `## Notes` — local navigation before cross-site traversal.
 
-```
-
 - [ ] **Step 6.5: Add changeset**
 
 Create `.changeset/federated-sites.md`:
@@ -1254,7 +1250,7 @@ grep -A 5 '^## Federated Sites' docs/dist/llms.txt
 
 Expected:
 
-```
+```markdown
 ## Federated Sites
 
 - [Example](https://example.com/llms.txt): Example federation target
@@ -2110,14 +2106,14 @@ Edit `docs/astro.config.ts`:
 + import starlightLlmsTxt from '@f5-sales-demo/starlight-llms-txt';
 ```
 
-2. Update the `site` URL:
+1. Update the `site` URL:
 
 ```diff
 - site: 'https://delucis.github.io',
 + site: 'https://f5-sales-demo.github.io',
 ```
 
-3. Update the GitHub links:
+1. Update the GitHub links:
 
 ```diff
 -           href: 'https://github.com/delucis/starlight-llms-txt',
