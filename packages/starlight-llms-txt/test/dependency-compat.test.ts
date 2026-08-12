@@ -29,7 +29,7 @@ describe('release versioning', () => {
     const lockfile = await readFile(new URL('../../../pnpm-lock.yaml', import.meta.url), 'utf8');
     const ciWorkflow = await readFile(new URL('../../../.github/workflows/ci.yml', import.meta.url), 'utf8');
     const releaseWorkflow = await readFile(new URL('../../../.github/workflows/release.yml', import.meta.url), 'utf8');
-    const setupAction = 'pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271';
+    const setupAction = 'pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86';
 
     expect(rootManifest.scripts['ci-version']).toContain('--config.manage-package-manager-versions=false');
     expect(rootManifest.packageManager).toBeUndefined();
