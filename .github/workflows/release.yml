@@ -10,7 +10,7 @@ jobs:
   release:
     name: Release
     if: ${{ github.repository_owner == 'f5-sales-demo' }}
-    runs-on: [self-hosted, Linux, X64, starlight-llms-txt]
+    runs-on: [self-hosted, Linux, X64, starlight-llms-txt, ubuntu-24.04]
     permissions:
       contents: write
       pull-requests: write
