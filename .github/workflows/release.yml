@@ -6,14 +6,19 @@ on:
     branches:
       - main
 
+concurrency:
+  group: release-${{ github.repository }}
+  cancel-in-progress: false
+
 jobs:
   release:
     name: Release
     if: ${{ github.repository_owner == 'f5-sales-demo' }}
     runs-on: [self-hosted, Linux, X64, starlight-llms-txt, ubuntu-24.04]
+    environment: release
     permissions:
-      contents: write
-      pull-requests: write
+      contents: write # create the versioning commit produced by Changesets
+      pull-requests: write # create or update the Changesets release pull request
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
