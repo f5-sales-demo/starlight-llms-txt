@@ -14,7 +14,7 @@ jobs:
   release:
     name: Release
     if: ${{ github.repository_owner == 'f5-sales-demo' }}
-    runs-on: [self-hosted, Linux, X64, starlight-llms-txt, ubuntu-24.04]
+    runs-on: docs-socketless
     environment: release
     permissions:
       contents: write # create the versioning commit produced by Changesets
