@@ -25,7 +25,12 @@ export const GET: APIRoute = async (context) => {
   let sectionsBlock: string | undefined;
   if (starlightLllmsTxtContext.sidebarNav) {
     const docs = await getCollection('docs', (doc) => isDefaultLocale(doc) && !doc.data.draft);
-    const tree = buildSectionTree(docs, starlightLllmsTxtContext.promote, starlightLllmsTxtContext.demote);
+    const tree = buildSectionTree(
+      docs,
+      starlightLllmsTxtContext.promote,
+      starlightLllmsTxtContext.demote,
+      getDefaultLocaleKeys(),
+    );
     sectionsBlock = renderSectionTree(tree, site) || undefined;
   }
 
