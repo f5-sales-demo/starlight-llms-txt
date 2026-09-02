@@ -106,10 +106,11 @@ describe('buildTierTree', () => {
   });
 
   it('matches promote and demote patterns relative to an explicit locale prefix', () => {
-    const tree = buildTierTree(
-      [doc('en/reference'), doc('en/guide'), doc('en/index')],
-      { promote: ['index'], demote: ['reference'], localePrefixes: ['en'] },
-    );
+    const tree = buildTierTree([doc('en/reference'), doc('en/guide'), doc('en/index')], {
+      promote: ['index'],
+      demote: ['reference'],
+      localePrefixes: ['en'],
+    });
     const en = tree.children.get('en');
     if (en?.type !== 'directory') throw new Error('expected locale directory');
     expect([...en.children.keys()]).toEqual(['index', 'guide', 'reference']);
