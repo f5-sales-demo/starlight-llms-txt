@@ -37,8 +37,8 @@ describe('release versioning', () => {
     expect(lockfile.startsWith('lockfileVersion:')).toBe(true);
     expect(lockfile.match(/^lockfileVersion:/gm)).toHaveLength(1);
     expect(ciWorkflow.match(new RegExp(setupAction, 'g'))).toHaveLength(2);
-    expect(ciWorkflow.match(/version: 11\.3\.0/g)).toHaveLength(2);
+    expect(ciWorkflow.match(/version: 11\.24\.0/g)).toHaveLength(2);
     expect(releaseWorkflow.match(new RegExp(setupAction, 'g'))).toHaveLength(1);
-    expect(releaseWorkflow.match(/version: 11\.3\.0/g)).toHaveLength(1);
+    expect(releaseWorkflow.match(/version: 11\.24\.0/g)).toHaveLength(1);
   });
 });
