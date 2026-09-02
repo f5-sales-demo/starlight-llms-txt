@@ -16,10 +16,10 @@ describe('Astro dependency compatibility', () => {
     expect(packageManifest.devDependencies['@astrojs/starlight']).toMatch(/^\^0\.41\./);
     expect(packageManifest.peerDependencies.astro).toMatch(/^\^7\./);
     expect(packageManifest.peerDependencies['@astrojs/starlight']).toMatch(/^\^0\.41\./);
-    expect(packageManifest.engines.node).toBe('>=22.12.0');
+    expect(packageManifest.engines.node).toBe('>=22.23.2');
     expect(docsManifest.dependencies.astro).toMatch(/^\^7\./);
     expect(docsManifest.dependencies['@astrojs/starlight']).toMatch(/^\^0\.41\./);
-    expect(docsManifest.engines.node).toBe('>=22.12.0');
+    expect(docsManifest.engines.node).toBe('>=22.23.2');
   });
 });
 
@@ -33,7 +33,7 @@ describe('release versioning', () => {
 
     expect(rootManifest.scripts['ci-version']).toContain('--config.manage-package-manager-versions=false');
     expect(rootManifest.packageManager).toBeUndefined();
-    expect(rootManifest.engines.pnpm).toBe('>=11.3.0');
+    expect(rootManifest.engines.pnpm).toBe('>=11.24.0');
     expect(lockfile.startsWith('lockfileVersion:')).toBe(true);
     expect(lockfile.match(/^lockfileVersion:/gm)).toHaveLength(1);
     expect(ciWorkflow.match(new RegExp(setupAction, 'g'))).toHaveLength(2);
