@@ -31,6 +31,7 @@ export type TierNode = DirectoryNode | LeafNode;
 export interface TierTreeOptions {
   promote?: string[];
   demote?: string[];
+  localePrefixes?: string[];
 }
 
 function titleCase(segment: string): string {
@@ -41,9 +42,16 @@ function titleCase(segment: string): string {
     .join(' ');
 }
 
-function sortKey(id: string, promote: string[], demote: string[]): string {
-  const demoted = demote.findIndex((expr) => micromatch.isMatch(id, expr));
-  const promoted = demoted > -1 ? -1 : promote.findIndex((expr) => micromatch.isMatch(id, expr));
+export function prioritySortKey(
+  id: string,
+  promote: string[],
+  demote: string[],
+  localePrefixes: string[] = [],
+): string {
+  const segments = id.split('/');
+  const matchId = localePrefixes.includes(segments[0] ?? '') && segments.length > 1 ? segments.slice(1).join('/') : id;
+  const demoted = demote.findIndex((expr) => micromatch.isMatch(matchId, expr));
+  const promoted = demoted > -1 ? -1 : promote.findIndex((expr) => micromatch.isMatch(matchId, expr));
   const prefixLength = (promoted > -1 ? promote.length - promoted : 0) + demote.length - demoted - 1;
   return '_'.repeat(prefixLength) + id;
 }
@@ -59,13 +67,13 @@ type DocLike = {
 };
 
 export function buildTierTree(entries: DocLike[], options: TierTreeOptions = {}): DirectoryNode {
-  const { promote = [], demote = [] } = options;
+  const { promote = [], demote = [], localePrefixes = [] } = options;
 
   const filtered = entries.filter((e) => !e.data.draft);
 
   const sorted = [...filtered].sort((a, b) => {
-    const keyA = sortKey(a.id, promote, demote);
-    const keyB = sortKey(b.id, promote, demote);
+    const keyA = prioritySortKey(a.id, promote, demote, localePrefixes);
+    const keyB = prioritySortKey(b.id, promote, demote, localePrefixes);
     if (keyA !== keyB) return keyA.localeCompare(keyB);
     const orderA = a.data.sidebar?.order ?? Infinity;
     const orderB = b.data.sidebar?.order ?? Infinity;
@@ -83,19 +91,6 @@ export function buildTierTree(entries: DocLike[], options: TierTreeOptions = {})
 
   for (const entry of sorted) {
     const segments = entry.id.split('/');
-
-    if (segments.length === 1) {
-      const seg0 = segments[0];
-      if (!seg0) continue;
-      root.children.set(seg0, {
-        type: 'leaf',
-        slug: entry.id,
-        segment: seg0,
-        meta: { title: entry.data.title, description: entry.data.description },
-        entry,
-      });
-      continue;
-    }
 
     let current = root;
     for (let i = 0; i < segments.length - 1; i++) {
@@ -143,7 +138,17 @@ export function buildTierTree(entries: DocLike[], options: TierTreeOptions = {})
       meta: { title: entry.data.title, description: entry.data.description },
       entry,
     };
-    current.children.set(leafSegment, leaf);
+    const existing = current.children.get(leafSegment);
+    if (existing?.type === 'directory') {
+      existing.children.set('index', {
+        ...leaf,
+        slug: `${leaf.slug}/index`,
+        segment: 'index',
+      });
+      existing.meta = { ...leaf.meta };
+    } else {
+      current.children.set(leafSegment, leaf);
+    }
 
     if (leafSegment === 'index') {
       current.meta.title = entry.data.title;

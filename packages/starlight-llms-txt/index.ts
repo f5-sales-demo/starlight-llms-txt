@@ -65,7 +65,7 @@ export default function starlightLlmsTxt(opts: StarlightLllmsTextOptions = {}): 
                 details: opts.details,
                 optionalLinks: opts.optionalLinks ?? [],
                 minify: opts.minify ?? {},
-                promote: opts.promote ?? ['index*'],
+                promote: opts.promote ?? ['index', 'overview'],
                 demote: opts.demote ?? [],
                 exclude: opts.exclude ?? [],
                 defaultLocale: config.defaultLocale,

@@ -4,6 +4,7 @@ import type { APIRoute, GetStaticPaths, InferGetStaticParamsType, InferGetStatic
 import { entryToSimpleMarkdown } from './entryToSimpleMarkdown';
 import { buildTierTree, type DirectoryNode, getAllTierPaths, type LeafNode } from './tier-tree';
 import { renderDirectoryIndex, renderLeafContent } from './tier-tree-render';
+import { getRoutableLocaleKeys } from './utils';
 
 export const prerender = true;
 
@@ -18,6 +19,7 @@ async function getTree(): Promise<DirectoryNode> {
   cachedTree = buildTierTree(docs, {
     promote: starlightLllmsTxtContext.promote,
     demote: starlightLllmsTxtContext.demote,
+    localePrefixes: getRoutableLocaleKeys(),
   });
   return cachedTree;
 }

@@ -105,6 +105,46 @@ describe('buildTierTree', () => {
     expect(keys).toEqual(['overview', 'references']);
   });
 
+  it('matches promote and demote patterns relative to an explicit locale prefix', () => {
+    const tree = buildTierTree(
+      [doc('en/reference'), doc('en/guide'), doc('en/index')],
+      { promote: ['index'], demote: ['reference'], localePrefixes: ['en'] },
+    );
+    const en = tree.children.get('en');
+    if (en?.type !== 'directory') throw new Error('expected locale directory');
+    expect([...en.children.keys()]).toEqual(['index', 'guide', 'reference']);
+  });
+
+  it('does not strip an unconfigured first path segment when matching patterns', () => {
+    const tree = buildTierTree([doc('guides/setup'), doc('setup')], {
+      promote: ['setup'],
+      localePrefixes: ['en'],
+    });
+    expect([...tree.children.keys()]).toEqual(['setup', 'guides']);
+  });
+
+  it('preserves a subtree when its parent page sorts after a child', () => {
+    const tree = buildTierTree(
+      [
+        doc('en/section', { title: 'Section', description: 'Section summary' }),
+        doc('en/section/page-a', { title: 'Page A' }),
+        doc('en/section/page-b', { title: 'Page B' }),
+      ],
+      { promote: ['section/**'], localePrefixes: ['en'] },
+    );
+    const en = tree.children.get('en');
+    if (en?.type !== 'directory') throw new Error('expected locale directory');
+    const section = en.children.get('section');
+    if (section?.type !== 'directory') throw new Error('expected section directory');
+    expect(section.meta).toEqual({ title: 'Section', description: 'Section summary' });
+    expect([...section.children.keys()].sort()).toEqual(['index', 'page-a', 'page-b']);
+    expect(section.children.get('index')).toMatchObject({
+      type: 'leaf',
+      slug: 'en/section/index',
+      segment: 'index',
+    });
+  });
+
   it('prunes empty directories (no non-draft children)', () => {
     const tree = buildTierTree([doc('empty-section/only-draft', { title: 'Draft', draft: true })]);
     expect(tree.children.size).toBe(0);

@@ -36,7 +36,12 @@ export const GET: APIRoute = async (context) => {
   let sectionsBlock: string | undefined;
   if (starlightLllmsTxtContext.sidebarNav) {
     const docs = await getCollection('docs', (doc) => isLocale(doc, locale) && !doc.data.draft);
-    const tree = buildSectionTree(docs, starlightLllmsTxtContext.promote, starlightLllmsTxtContext.demote);
+    const tree = buildSectionTree(
+      docs,
+      starlightLllmsTxtContext.promote,
+      starlightLllmsTxtContext.demote,
+      [locale],
+    );
     // Tier paths carry the locale in their first segment, so section links are
     // resolved against the site root rather than the locale prefix.
     sectionsBlock = renderSectionTree(tree, site) || undefined;

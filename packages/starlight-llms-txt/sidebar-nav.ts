@@ -10,8 +10,13 @@ type DocLike = {
   };
 };
 
-export function buildSectionTree(docs: DocLike[], promote: string[] = [], demote: string[] = []): DirectoryNode {
-  return buildTierTree(docs, { promote, demote });
+export function buildSectionTree(
+  docs: DocLike[],
+  promote: string[] = [],
+  demote: string[] = [],
+  localePrefixes: string[] = [],
+): DirectoryNode {
+  return buildTierTree(docs, { promote, demote, localePrefixes });
 }
 
 export function renderSectionTree(tree: DirectoryNode, site: URL): string {
