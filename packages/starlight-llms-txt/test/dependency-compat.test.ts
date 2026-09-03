@@ -16,10 +16,10 @@ describe('Astro dependency compatibility', () => {
     expect(packageManifest.devDependencies['@astrojs/starlight']).toMatch(/^\^0\.41\./);
     expect(packageManifest.peerDependencies.astro).toMatch(/^\^7\./);
     expect(packageManifest.peerDependencies['@astrojs/starlight']).toMatch(/^\^0\.41\./);
-    expect(packageManifest.engines.node).toBe('>=22.23.2');
+    expect(packageManifest.engines.node).toBe('>=24.19.0');
     expect(docsManifest.dependencies.astro).toMatch(/^\^7\./);
     expect(docsManifest.dependencies['@astrojs/starlight']).toMatch(/^\^0\.41\./);
-    expect(docsManifest.engines.node).toBe('>=22.23.2');
+    expect(docsManifest.engines.node).toBe('>=24.19.0');
   });
 });
 

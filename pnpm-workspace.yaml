@@ -6,6 +6,10 @@ allowBuilds:
   esbuild: true
   sharp: true
 
+overrides:
+  js-yaml: '^4.3.1'
+  nanoid: '>=3.3.18 <4'
+
 # Exact, integrity-locked direct dependency reviewed against 0.41.5.
 # The signed, provenance-attested patch only adds the Forgejo icon.
 minimumReleaseAgeExclude:
