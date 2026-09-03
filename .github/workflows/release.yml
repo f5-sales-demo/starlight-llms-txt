@@ -5,6 +5,12 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
+    inputs:
+      expected_version:
+        description: Exact prerelease version to publish from changeset-release/main
+        required: true
+        type: string
 
 concurrency:
   group: release-${{ github.repository }}
@@ -13,16 +19,25 @@ concurrency:
 jobs:
   release:
     name: Release
-    if: ${{ github.repository_owner == 'f5-sales-demo' }}
+    if: ${{ github.repository_owner == 'f5-sales-demo' && (github.event_name == 'push' || github.ref_name == 'main') }}
     runs-on: docs-socketless
     environment: release
     permissions:
       contents: write # create the versioning commit produced by Changesets
       pull-requests: write # create or update the Changesets release pull request
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Check out workflow source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      - name: Check out versioned prerelease
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          path: prerelease
+          ref: changeset-release/main
       - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
         with:
           version: 11.24.0
@@ -31,8 +46,14 @@ jobs:
           node-version: 24.19.0
           cache: "pnpm"
           registry-url: 'https://registry.npmjs.org'
-      - run: pnpm i
+      - name: Install main dependencies
+        if: github.event_name == 'push'
+        run: pnpm install --frozen-lockfile --config.manage-package-manager-versions=false
+      - name: Install versioned prerelease dependencies
+        if: github.event_name == 'workflow_dispatch'
+        run: pnpm --dir prerelease install --frozen-lockfile --config.manage-package-manager-versions=false
       - uses: changesets/action@8488615a623b1b9c987934bb89eae8af6a946ac1 # v2.1.1
+        if: github.event_name == 'push'
         with:
           version-script: pnpm run ci-version
           publish-script: pnpm run ci-publish
@@ -42,3 +63,61 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Validate exact prerelease and release PR
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          EXPECTED_VERSION: ${{ inputs.expected_version }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          node scripts/validate-prerelease-publish.mjs "$EXPECTED_VERSION" prerelease
+
+          release_pr_count=$(gh pr list \
+            --repo "$GITHUB_REPOSITORY" \
+            --state open \
+            --base main \
+            --head changeset-release/main \
+            --limit 2 \
+            --json number \
+            --jq length)
+          test "$release_pr_count" -eq 1
+
+          release_pr=$(gh pr list \
+            --repo "$GITHUB_REPOSITORY" \
+            --state open \
+            --base main \
+            --head changeset-release/main \
+            --limit 1 \
+            --json number \
+            --jq '.[0].number')
+          test "$(gh pr view "$release_pr" --repo "$GITHUB_REPOSITORY" --json headRefOid --jq .headRefOid)" = "$(git -C prerelease rev-parse HEAD)"
+          test "$(gh pr view "$release_pr" --repo "$GITHUB_REPOSITORY" --json closingIssuesReferences --jq '.closingIssuesReferences | length')" -eq 0
+      - name: Test exact prerelease
+        if: github.event_name == 'workflow_dispatch'
+        run: pnpm --dir prerelease test
+      - name: Publish exact prerelease
+        id: publish
+        if: github.event_name == 'workflow_dispatch'
+        # Versioned prerelease changesets live under .changeset/pre, so the root action selects publish mode.
+        uses: changesets/action@8488615a623b1b9c987934bb89eae8af6a946ac1 # v2.1.1
+        with:
+          cwd: prerelease
+          publish-script: pnpm run ci-publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Verify exact publication result
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          EXPECTED_VERSION: ${{ inputs.expected_version }}
+          PUBLISHED: ${{ steps.publish.outputs.published }}
+          PUBLISHED_PACKAGES: ${{ steps.publish.outputs['published-packages'] }}
+        run: |
+          node -e '
+            const packages = JSON.parse(process.env.PUBLISHED_PACKAGES);
+            const expected = { name: "@f5-sales-demo/starlight-llms-txt", version: process.env.EXPECTED_VERSION };
+            if (process.env.PUBLISHED !== "true" || packages.length !== 1 || packages[0].name !== expected.name || packages[0].version !== expected.version) {
+              throw new Error("Unexpected publication result: " + process.env.PUBLISHED + " " + process.env.PUBLISHED_PACKAGES);
+            }
+          '
