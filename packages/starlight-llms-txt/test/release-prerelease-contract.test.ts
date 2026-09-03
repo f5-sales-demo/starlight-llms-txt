@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
-import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import getReleasePlan from '@changesets/get-release-plan';
 import { describe, expect, test } from 'vitest';
