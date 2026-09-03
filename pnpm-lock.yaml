@@ -18,6 +18,10 @@ importers:
       '@changesets/cli':
         specifier: ^3.0.1
         version: 3.0.1
+    devDependencies:
+      '@changesets/get-release-plan':
+        specifier: ^5.0.0
+        version: 5.0.0
 
   docs:
     dependencies:
@@ -369,6 +373,10 @@ packages:
 
   '@changesets/get-github-info@1.0.0':
     resolution: {integrity: sha512-nf5zPSqEKW0eXiJ4ltbjyIQ/srUHfxbghkLCjKdOLI3LehKXhiqxXcpja39eGPaj6qqGx2lFCrLJ7VWYUf9H2w==}
+    engines: {node: ^22.11 || ^24 || >=26}
+
+  '@changesets/get-release-plan@5.0.0':
+    resolution: {integrity: sha512-3Dr+6eukpTjAFxkaUUkD00gLbjjhW3PUzkcF0ePYMCiGEv/oaKAKZy3+TN3pWYIsAwUYGJXPF0wM9rhT0xlfUw==}
     engines: {node: ^22.11 || ^24 || >=26}
 
   '@changesets/git@4.0.0':
@@ -2795,6 +2803,15 @@ snapshots:
   '@changesets/get-github-info@1.0.0':
     dependencies:
       dataloader: 2.2.3
+
+  '@changesets/get-release-plan@5.0.0':
+    dependencies:
+      '@changesets/assemble-release-plan': 7.0.0
+      '@changesets/config': 4.0.0
+      '@changesets/pre': 3.0.0
+      '@changesets/read': 1.0.0
+      '@changesets/types': 7.0.0
+      '@manypkg/get-packages': 3.1.0
 
   '@changesets/git@4.0.0':
     dependencies:
