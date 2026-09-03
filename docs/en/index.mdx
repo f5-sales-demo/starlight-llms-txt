@@ -1,0 +1,85 @@
+---
+title: Starlight llms.txt Plugin
+description: Automated llms.txt and llms-full.txt generation for Astro Starlight documentation sites.
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+The **starlight-llms-txt** plugin integrates with Astro Starlight to generate standard-compliant `llms.txt` and `llms-full.txt` feeds. These endpoints provide large language model (LLM) agents, crawlers, and AI developer tools with structured, token-efficient, and federated documentation context.
+
+## Core Capabilities
+
+<CardGrid>
+  <Card title="Standard Compliance" icon="document">
+    Generates structured <code>/llms.txt</code> files conforming to the emerging LLM context standard with curated link sections.
+  </Card>
+  <Card title="Full Content Concatenation" icon="open-book">
+    Builds single-file <code>/llms-full.txt</code> feeds stripped of UI boilerplate, navigation bars, and HTML noise.
+  </Card>
+  <Card title="Multi-Locale Routing" icon="translate">
+    Automatically produces localized feeds (e.g., <code>/ja/llms.txt</code>, <code>/ko/llms-full.txt</code>) matching your Starlight locales.
+  </Card>
+  <Card title="Federated Sites Integration" icon="puzzle">
+    Aggregates remote documentation endpoints across modular multi-repo ecosystems via <code>llms-federated-sites.json</code>.
+  </Card>
+</CardGrid>
+
+## Architecture & Feed Pipeline
+
+```text
++-------------------------------------------------------------------------+
+|                        Astro Starlight Build Engine                     |
+|                                                                         |
+|  +-----------------------+     +-------------------------------------+  |
+|  | Markdown/MDX Content  |     | starlight-llms-txt Integration Hook |  |
+|  +-----------+-----------+     +------------------+------------------+  |
+|              |                                    |                     |
+|              v                                    v                     |
+|  +-----------------------+     +-------------------------------------+  |
+|  | Clean Markdown AST    | --> | llms.txt / llms-full.txt Generator  |  |
+|  | (Stripped Frontmatter)|     | (Tier Trees & Federated Federation) |  |
+|  +-----------------------+     +------------------+------------------+  |
++---------------------------------------------------|---------------------+
+                                                    |
+                                                    v
++-------------------------------------------------------------------------+
+|                         Generated Static Endpoints                      |
+|   /llms.txt  |  /llms-full.txt  |  /llms-small.txt  |  /llms-tiered.txt |
++-------------------------------------------------------------------------+
+```
+
+## Quick Start
+
+### Installation
+
+Install the package into your Starlight project:
+
+```bash
+npm install @f5-sales-demo/starlight-llms-txt
+```
+
+### Configuration
+
+Add the plugin to your `astro.config.mjs`:
+
+```javascript
+import { defineConfig } from 'astro/config';
+import starlight from '@astrojs/starlight';
+import starlightLlmsTxt from '@f5-sales-demo/starlight-llms-txt';
+
+export default defineConfig({
+  integrations: [
+    starlight({
+      title: 'Example Documentation',
+      plugins: [
+        starlightLlmsTxt({
+          description: 'Technical documentation for Example Corp cloud services.',
+          details: 'Includes architecture guides, CLI references, and API specifications.',
+          promote: ['getting-started', 'architecture'],
+          demote: ['archive', 'deprecated'],
+        }),
+      ],
+    }),
+  ],
+});
+```

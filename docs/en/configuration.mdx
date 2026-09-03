@@ -1,0 +1,32 @@
+---
+title: Configuration Reference
+description: Complete options and schema reference for the starlight-llms-txt plugin.
+---
+
+## Plugin Options
+
+The `starlightLlmsTxt` plugin accepts the following configuration parameters:
+
+| Option | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `description` | `string` | Site description | High-level summary of the documentation site displayed in the header block. |
+| `details` | `string` | `undefined` | Extended guidance or context instructions for AI agents processing the feed. |
+| `promote` | `string[]` | `[]` | List of section slugs to prioritize near the top of `llms.txt`. |
+| `demote` | `string[]` | `[]` | List of section slugs to place at the bottom of the index. |
+| `exclude` | `string[]` | `[]` | Glob patterns or route paths to exclude from `llms-full.txt`. |
+| `federatedSites` | `string` | `undefined` | File path to a JSON file containing federated remote documentation endpoints. |
+
+## Federation Schema
+
+When linking multiple repositories across an organization, provide a `llms-federated-sites.json` file:
+
+```json
+[
+  {
+    "label": "Service API Reference",
+    "url": "https://docs.example.com/api/llms.txt",
+    "description": "OpenAPI specifications and endpoint contracts",
+    "category": "developer-tools"
+  }
+]
+```
