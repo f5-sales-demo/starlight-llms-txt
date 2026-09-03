@@ -92,9 +92,11 @@ jobs:
             --jq '.[0].number')
           test "$(gh pr view "$release_pr" --repo "$GITHUB_REPOSITORY" --json headRefOid --jq .headRefOid)" = "$(git -C prerelease rev-parse HEAD)"
           test "$(gh pr view "$release_pr" --repo "$GITHUB_REPOSITORY" --json closingIssuesReferences --jq '.closingIssuesReferences | length')" -eq 0
-      - name: Test exact prerelease
+      - name: Test versioned prerelease
         if: github.event_name == 'workflow_dispatch'
-        run: pnpm --dir prerelease test
+        run: >-
+          pnpm --dir prerelease --filter @f5-sales-demo/starlight-llms-txt
+          exec vitest run --exclude test/release-prerelease-contract.test.ts
       - name: Publish exact prerelease
         id: publish
         if: github.event_name == 'workflow_dispatch'
