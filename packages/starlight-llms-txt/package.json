@@ -30,7 +30,7 @@
   },
   "devDependencies": {
     "@astrojs/starlight": "^0.41.9",
-    "astro": "^7.2.7",
+    "astro": "^7.2.8",
     "vitest": "^4.1.11"
   },
   "scripts": {
@@ -39,10 +39,10 @@
   },
   "peerDependencies": {
     "@astrojs/starlight": "^0.41.9",
-    "astro": "^7.2.7"
+    "astro": "^7.2.8"
   },
   "engines": {
-    "node": ">=24.19.0"
+    "node": ">=24.20.0"
   },
   "publishConfig": {
     "access": "public"

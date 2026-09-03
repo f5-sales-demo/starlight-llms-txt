@@ -15,11 +15,11 @@
   "dependencies": {
     "@astrojs/starlight": "^0.41.9",
     "@f5-sales-demo/starlight-llms-txt": "workspace:*",
-    "astro": "^7.2.7",
+    "astro": "^7.2.8",
     "sharp": "^0.35.4"
   },
   "engines": {
-    "node": ">=24.19.0"
+    "node": ">=24.20.0"
   },
   "private": true,
   "homepage": "https://github.com/delucis/starlight-llms-txt",
