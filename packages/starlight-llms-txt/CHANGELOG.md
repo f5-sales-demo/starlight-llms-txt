@@ -1,5 +1,20 @@
 # starlight-llms-txt
 
+## 2.0.0
+
+### Major Changes
+
+- [#614](https://github.com/f5-sales-demo/starlight-llms-txt/pull/614) [`8f34c7d`](https://github.com/f5-sales-demo/starlight-llms-txt/commit/8f34c7d1bde8f5ed59a22cd8ef982bd9337aead6) Thanks [@robinmordasiewicz](https://github.com/robinmordasiewicz)! - <!-- markdownlint-disable MD041 -->
+  Require Node.js 24.19 or newer and modernize the Changesets release toolchain.
+  <!-- markdownlint-enable MD041 -->
+
+### Patch Changes
+
+- [#601](https://github.com/f5-sales-demo/starlight-llms-txt/pull/601) [`d46422d`](https://github.com/f5-sales-demo/starlight-llms-txt/commit/d46422d1c3b44dea38c6c8e4b15243e86620e7cf) Thanks [@robinmordasiewicz](https://github.com/robinmordasiewicz)! - <!-- markdownlint-disable MD041 -->
+  Apply promote and demote patterns relative to configured locale prefixes, and
+  preserve directory children when an ancestor index sorts after its descendants.
+  <!-- markdownlint-enable MD041 -->
+
 ## 1.4.1
 
 ### Patch Changes
