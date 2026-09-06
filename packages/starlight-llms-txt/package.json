@@ -29,8 +29,8 @@
     "unist-util-remove": "^4.0.0"
   },
   "devDependencies": {
-    "@astrojs/starlight": "^0.41.9",
-    "astro": "^7.2.7",
+    "@astrojs/starlight": "^0.41.10",
+    "astro": "^7.2.9",
     "vitest": "^4.1.11"
   },
   "scripts": {
@@ -38,11 +38,11 @@
     "test:watch": "vitest"
   },
   "peerDependencies": {
-    "@astrojs/starlight": "^0.41.9",
-    "astro": "^7.2.7"
+    "@astrojs/starlight": "^0.41.10",
+    "astro": "^7.2.9"
   },
   "engines": {
-    "node": ">=24.19.0"
+    "node": ">=24.20.0"
   },
   "publishConfig": {
     "access": "public"
