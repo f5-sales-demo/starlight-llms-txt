@@ -7,7 +7,7 @@ Fork of [`starlight-llms-txt`](https://github.com/delucis/starlight-llms-txt) by
 - `perPageMarkdown` — per-page `.md` endpoints
 - `sidebarNav` — sidebar hierarchy in `llms.txt`, with frontmatter descriptions inlined automatically
 - `federatedSites` — cross-repo links for federated doc portals
-- `progressiveCorpus` — English-only progressive indexes and full-document
+- `progressiveCorpus` — English-only progressive indices and full-document
   leaves sourced from a verified external Markdown corpus
 
 A progressive corpus stays outside the Starlight `docs` collection, so its
