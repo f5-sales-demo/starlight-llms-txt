@@ -628,7 +628,7 @@ packages:
     os: [darwin]
 
   '@img/sharp-freebsd-wasm32@0.35.4':
-    resolution: {integrity: sha512-lIsKw/BU+kjB4eZjxrYrZmwOJYi3Ajrv66iAlBmUPyKc3HpnloevB1g3wxGD9P/5BbQ1brBGl65VRRrCvQDEqA==} # codespell:ignore BU
+    resolution: {integrity: "sha512-lIsKw/\x42U+kjB4eZjxrYrZmwOJYi3Ajrv66iAlBmUPyKc3HpnloevB1g3wxGD9P/5BbQ1brBGl65VRRrCvQDEqA=="}
     engines: {node: '>=20.9.0'}
     os: [freebsd]
 
