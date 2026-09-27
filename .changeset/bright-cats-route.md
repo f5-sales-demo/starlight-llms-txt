@@ -4,4 +4,4 @@
 
 # Reserve semantic taxonomy routes
 
-Keep taxonomy indexes in a reserved namespace so canonical corpus leaf URLs cannot shadow them.
+Keep taxonomy indices in a reserved namespace so canonical corpus leaf URLs cannot shadow them.
