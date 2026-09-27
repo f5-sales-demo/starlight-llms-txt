@@ -2,4 +2,6 @@
 "@f5-sales-demo/starlight-llms-txt": minor
 ---
 
-Add semantic category and subcategory grouping with bounded plain-text hints for progressive corpora.
+# Add semantic progressive corpus taxonomy
+
+Group progressive corpora by category and subcategory with bounded plain-text hints.
