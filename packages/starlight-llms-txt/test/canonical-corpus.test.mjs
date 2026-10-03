@@ -219,3 +219,19 @@ test('distinct reviewed identities stay in smaller sibling subcategories', () =>
     rmSync(f.root, { recursive: true, force: true });
   }
 });
+test('receipt-verified historical navigation without enriched metadata stays reachable', () => {
+  const f = fixture();
+  try {
+    mkdirSync(join(f.source, 'actions'));
+    const text = '---\ntitle: "Actions"\n---\n\n# Actions\n\nHistorical navigation.\n';
+    writeFileSync(join(f.source, 'actions/index.md'), text);
+    const manifest = JSON.parse(readFileSync(join(f.source, 'generated-manifest.json'), 'utf8'));
+    manifest.files['documentation/actions/index.md'] = { bytes: Buffer.byteLength(text), sha256: hash(text) };
+    writeFileSync(join(f.source, 'generated-manifest.json'), JSON.stringify(manifest));
+    const r = writeCanonicalHierarchy({ contentRoot: f.source, outputRoot: f.output });
+    assert.equal(r.pages, 2);
+    assert.ok(r.pageIndexes['xcsh-docs:path:documentation/actions/index.md']);
+  } finally {
+    rmSync(f.root, { recursive: true, force: true });
+  }
+});

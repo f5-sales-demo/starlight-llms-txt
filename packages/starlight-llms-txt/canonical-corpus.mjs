@@ -101,9 +101,27 @@ export function readCanonicalCorpus(contentRoot) {
     if (!Buffer.from(text).equals(data)) throw new Error(`Invalid canonical UTF-8: ${name}`);
     const frontmatter = text.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n(?:\r?\n)?/);
     const line = frontmatter?.[1].split('\n').find((x) => x.startsWith('xcsh_docs: '));
-    if (!line) throw new Error(`Missing canonical metadata: ${name}`);
-    const meta = JSON.parse(line.slice(11));
-    const body = text.slice(frontmatter[0].length);
+    const body = frontmatter ? text.slice(frontmatter[0].length) : text;
+    const meta = line
+      ? JSON.parse(line.slice(11))
+      : {
+          id: `xcsh-docs:path:documentation/${name}`,
+          collection_id: `xcsh-docs:path:documentation/${name}:collection`,
+          provider_type: name === 'index.md' ? 'provider' : name.split('/')[0],
+          provider_name: 'xcsh',
+          role: 'navigation',
+          schema_path: [],
+          category: null,
+          classification: { status: 'unresolved', sources: ['receipt-verified-historical-navigation'] },
+          body_bytes: bytes(body),
+          body_sha256: digest(body),
+        };
+    if (
+      !line &&
+      !/^(?:index\.md|(?:actions|resources|data-sources|ephemeral-resources|guides)\/index\.md)$/.test(name)
+    ) {
+      throw new Error(`Missing canonical metadata: ${name}`);
+    }
     if (meta.body_bytes !== bytes(body) || meta.body_sha256 !== digest(body))
       throw new Error(`Canonical body receipt mismatch: ${name}`);
     if (!meta.id || ids.has(meta.id)) throw new Error(`Canonical ID collision: ${meta.id}`);
@@ -114,7 +132,9 @@ export function readCanonicalCorpus(contentRoot) {
     if (routes.has(slug)) throw new Error(`Canonical route collision: ${slug}`);
     ids.add(meta.id);
     routes.add(slug);
-    const titleLine = frontmatter[1].split('\n').find((x) => x.startsWith('page_title: ') || x.startsWith('title: '));
+    const titleLine = (frontmatter?.[1] || '')
+      .split('\n')
+      .find((x) => x.startsWith('page_title: ') || x.startsWith('title: '));
     pages.push({
       name,
       slug,
