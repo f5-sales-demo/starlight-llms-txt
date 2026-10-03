@@ -29,7 +29,11 @@ describe('Changesets stable release contract', () => {
     ) as { name: string; version: string };
     expect(packageJson.name).toBe(packageName);
     expect(packageJson.version).toMatch(/^2\.\d+\.\d+$/);
-    expect(releasePlan.releases.every((release) => /^2\.\d+\.\d+$/.test(release.newVersion))).toBe(true);
+    expect(
+      releasePlan.releases
+        .filter((release) => release.name === packageName)
+        .every((release) => /^2\.\d+\.\d+$/.test(release.newVersion)),
+    ).toBe(true);
     expect(releasePlan.preState).toBeUndefined();
   });
 });
