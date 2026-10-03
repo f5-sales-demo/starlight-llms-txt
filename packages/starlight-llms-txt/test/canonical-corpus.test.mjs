@@ -189,3 +189,33 @@ test('reviewed collection mappings create multiple subcategories and report ambi
     rmSync(f.root, { recursive: true, force: true });
   }
 });
+test('distinct reviewed identities stay in smaller sibling subcategories', () => {
+  const f = fixture(2);
+  try {
+    const file = join(f.source, '1.md');
+    const text = readFileSync(file, 'utf8')
+      .replace('"collection-resources"', '"collection-second"')
+      .replace('"provider_name":"sample"', '"provider_name":"second"');
+    writeFileSync(file, text);
+    const manifest = JSON.parse(readFileSync(join(f.source, 'generated-manifest.json'), 'utf8'));
+    manifest.files['documentation/1.md'] = { bytes: Buffer.byteLength(text), sha256: hash(text) };
+    writeFileSync(join(f.source, 'generated-manifest.json'), JSON.stringify(manifest));
+    const config = JSON.parse(readFileSync(join(f.source, 'llms-config.json'), 'utf8'));
+    config.canonicalCorpus.taxonomy.subcategories = [
+      { category: 'networking', title: 'Routing', collections: ['sample'], evidence: 'Canonical routing identity.' },
+      {
+        category: 'networking',
+        title: 'Interfaces',
+        collections: ['second'],
+        evidence: 'Canonical interface identity.',
+      },
+    ];
+    writeFileSync(join(f.source, 'llms-config.json'), JSON.stringify(config));
+    const r = writeCanonicalHierarchy({ contentRoot: f.source, outputRoot: f.output });
+    assert.equal(r.unclassified.length, 0);
+    assert.ok(r.scopes.includes('_llms-txt/topics/networking/routing'));
+    assert.ok(r.scopes.includes('_llms-txt/topics/networking/interfaces'));
+  } finally {
+    rmSync(f.root, { recursive: true, force: true });
+  }
+});
