@@ -1,5 +1,13 @@
 # starlight-llms-txt
 
+## 2.3.0
+
+### Minor Changes
+
+- [#669](https://github.com/f5-sales-demo/starlight-llms-txt/pull/669) [`84e97d1`](https://github.com/f5-sales-demo/starlight-llms-txt/commit/84e97d12fda09b4294b1199ff95275c484a94655) Thanks [@robinmordasiewicz](https://github.com/robinmordasiewicz)! - # Canonical hierarchy
+  
+  Publish receipt-verified canonical documentation through a bounded, streaming topic hierarchy.
+
 ## 2.2.0
 
 ### Minor Changes
