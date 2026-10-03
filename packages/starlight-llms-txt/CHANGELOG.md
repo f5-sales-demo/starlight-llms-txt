@@ -1,5 +1,13 @@
 # starlight-llms-txt
 
+## 2.3.1
+
+### Patch Changes
+
+- [#671](https://github.com/f5-sales-demo/starlight-llms-txt/pull/671) [`9765e64`](https://github.com/f5-sales-demo/starlight-llms-txt/commit/9765e6414dd4d69e22352d7ef4e0ba012cb29efe) Thanks [@robinmordasiewicz](https://github.com/robinmordasiewicz)! - # Historical canonical navigation
+  
+  Keep receipt-verified historical landing pages reachable without modifying immutable source metadata.
+
 ## 2.3.0
 
 ### Minor Changes
