@@ -118,35 +118,6 @@ test('every provider family and setup/guides is reachable', () => {
     rmSync(f.root, { recursive: true, force: true });
   }
 });
-test('indivisible content fails before touching an existing publication', () => {
-  const f = fixture();
-  try {
-    let text = readFileSync(join(f.source, '0.md'), 'utf8');
-    const body = '```\n' + 'x'.repeat(140000) + '\n```\n';
-    const meta = JSON.parse(
-      text
-        .split('\n')
-        .find((x) => x.startsWith('xcsh_docs: '))
-        .slice(11),
-    );
-    text = `---\npage_title: "Large"\nxcsh_docs: ${JSON.stringify({ ...meta, body_bytes: Buffer.byteLength(body), body_sha256: hash(body) })}\n---\n\n${body}`;
-    writeFileSync(join(f.source, '0.md'), text);
-    writeFileSync(
-      join(f.source, 'generated-manifest.json'),
-      JSON.stringify({
-        schema_version: 1,
-        files: { 'documentation/0.md': { bytes: Buffer.byteLength(text), sha256: hash(text) } },
-      }),
-    );
-    mkdirSync(f.output);
-    writeFileSync(join(f.output, 'llms.txt'), 'previous publication');
-    assert.throws(() => writeCanonicalHierarchy({ contentRoot: f.source, outputRoot: f.output }), /0.md.*indivisible/);
-    assert.equal(readFileSync(join(f.output, 'llms.txt'), 'utf8'), 'previous publication');
-    assert.deepEqual(readdirSync(f.output), ['llms.txt']);
-  } finally {
-    rmSync(f.root, { recursive: true, force: true });
-  }
-});
 test('slug-normalization collisions fail explicitly', () => {
   const f = fixture(2);
   try {
@@ -158,6 +129,62 @@ test('slug-normalization collisions fail explicitly', () => {
     manifest.files['documentation/1.md'] = { bytes: Buffer.byteLength(changed), sha256: hash(changed) };
     writeFileSync(join(f.source, 'generated-manifest.json'), JSON.stringify(manifest));
     assert.throws(() => writeCanonicalHierarchy({ contentRoot: f.source, outputRoot: f.output }), /route collision/);
+  } finally {
+    rmSync(f.root, { recursive: true, force: true });
+  }
+});
+test('complete leaves have no fixed byte limit while discovery stays bounded', () => {
+  const f = fixture();
+  try {
+    const old = readFileSync(join(f.source, '0.md'), 'utf8');
+    const meta = JSON.parse(
+      old
+        .split('\n')
+        .find((x) => x.startsWith('xcsh_docs: '))
+        .slice(11),
+    );
+    const body = '| Schema path | Complete reference |\n| --- | --- |\n' + '| `deep` | complete |\n'.repeat(100000);
+    const text = `---\npage_title: "Large table"\nxcsh_docs: ${JSON.stringify({ ...meta, body_bytes: Buffer.byteLength(body), body_sha256: hash(body) })}\n---\n\n${body}`;
+    writeFileSync(join(f.source, '0.md'), text);
+    writeFileSync(
+      join(f.source, 'generated-manifest.json'),
+      JSON.stringify({
+        schema_version: 1,
+        files: { 'documentation/0.md': { bytes: Buffer.byteLength(text), sha256: hash(text) } },
+      }),
+    );
+    const r = writeCanonicalHierarchy({ contentRoot: f.source, outputRoot: f.output });
+    const leaf = `${r.pageIndexes['page-0'].scope}/content.txt`;
+    assert.equal(readFileSync(join(f.output, leaf), 'utf8'), body);
+    assert.ok(readFileSync(join(f.output, leaf)).length > 2 * 1024 * 1024);
+    assert.equal(r.maxLeafBytes, Buffer.byteLength(body));
+    assert.match(readFileSync(join(f.output, r.pageIndexes['page-0'].scope, 'llms.txt'), 'utf8'), /2200051 bytes/);
+  } finally {
+    rmSync(f.root, { recursive: true, force: true });
+  }
+});
+test('reviewed collection mappings create multiple subcategories and report ambiguity', () => {
+  const f = fixture(2);
+  try {
+    const config = JSON.parse(readFileSync(join(f.source, 'llms-config.json'), 'utf8'));
+    config.canonicalCorpus.taxonomy.subcategories = [
+      {
+        category: 'networking',
+        title: 'Routing',
+        collections: ['sample'],
+        evidence: 'Pinned schema identity and description.',
+      },
+      {
+        category: 'networking',
+        title: 'Interfaces',
+        collections: ['sample'],
+        evidence: 'Conflicting reviewed mapping.',
+      },
+    ];
+    writeFileSync(join(f.source, 'llms-config.json'), JSON.stringify(config));
+    const r = writeCanonicalHierarchy({ contentRoot: f.source, outputRoot: f.output });
+    assert.equal(r.unclassified.length, 1);
+    assert.ok(r.unclassified[0].reasons.includes('ambiguous-subcategory'));
   } finally {
     rmSync(f.root, { recursive: true, force: true });
   }

@@ -135,21 +135,6 @@ export function readCanonicalCorpus(contentRoot) {
 export function writeCanonicalHierarchy({ contentRoot, outputRoot, base = '/', title = 'Canonical documentation' }) {
   const started = performance.now();
   const corpus = readCanonicalCorpus(contentRoot);
-  // Preflight every block before writing anything. A failure leaves the
-  // existing publication untouched and names the canonical page to repair.
-  const blockFailures = [];
-  for (const page of corpus.pages) {
-    const body = readFileSync(join(corpus.root, page.name), 'utf8').replace(
-      /^---\r?\n[\s\S]*?\r?\n---\r?\n(?:\r?\n)?/,
-      '',
-    );
-    try {
-      splitMarkdown(body, 128 * 1024 - 4096);
-    } catch (error) {
-      blockFailures.push({ page: page.name, reason: error.message });
-    }
-  }
-  if (blockFailures.length) throw new Error(`Canonical content preflight failed: ${JSON.stringify(blockFailures)}`);
   const taxonomy = corpus.config.taxonomy;
   const prefix = '/' + base.split('/').filter(Boolean).join('/');
   const url = (route) => `${prefix === '/' ? '' : prefix}/${route}`;
@@ -183,6 +168,13 @@ export function writeCanonicalHierarchy({ contentRoot, outputRoot, base = '/', t
     const m = representative.meta;
     const reviewed = taxonomy.topics?.[m.category];
     const reasons = [];
+    const mappings = (taxonomy.subcategories || []).filter(
+      (rule) => rule.category === m.category && rule.collections?.includes(m.provider_name),
+    );
+    if (mappings.some((rule) => !rule.evidence || !rule.title))
+      throw new Error('Subcategory mapping requires title and evidence');
+    if (mappings.length > 1) reasons.push('ambiguous-subcategory');
+    if (taxonomy.subcategories && mappings.length === 0) reasons.push('unmapped-subcategory');
     if (m.classification?.status !== 'resolved') reasons.push('unresolved-classification');
     if (m.classification?.rules_sha256 !== taxonomy.rulesDigest) reasons.push('rules-digest');
     if (!reviewed) reasons.push('unmapped-category');
@@ -196,11 +188,12 @@ export function writeCanonicalHierarchy({ contentRoot, outputRoot, base = '/', t
         classification: m.classification,
         upstream: m.upstream_identity,
         summary: m.summary,
+        subcategoryEvidence: mappings,
       });
     const topicName = reasons.length ? 'Unclassified' : reviewed.title;
     const topic = scope(`_llms-txt/topics/${segment(topicName)}`, topicName);
     link(topics, topic);
-    const subcategoryName = reasons.length ? 'Needs review' : reviewed.subcategory;
+    const subcategoryName = reasons.length ? 'Needs review' : mappings[0]?.title || reviewed.subcategory;
     const sub = scope(`${topic.route}/${segment(subcategoryName)}`, subcategoryName);
     link(topic, sub);
     const family = segment(m.provider_type);
@@ -247,6 +240,8 @@ export function writeCanonicalHierarchy({ contentRoot, outputRoot, base = '/', t
   const bulkFd = openSync(join(outputRoot, 'llms-full.txt'), 'w');
   const bulkHash = createHash('sha256');
   let bulkBytes = 0;
+  let maxLeafBytes = 0;
+  const leaves = [];
   try {
     for (const page of corpus.pages) {
       const text = readFileSync(join(corpus.root, page.name), 'utf8');
@@ -255,17 +250,19 @@ export function writeCanonicalHierarchy({ contentRoot, outputRoot, base = '/', t
       writeSync(bulkFd, bulk);
       bulkHash.update(bulk);
       bulkBytes += bytes(bulk);
-      const parts = splitMarkdown(body, 128 * 1024 - 4096);
       const content = scopes.get(pageIndexes[page.meta.id].scope);
-      for (let i = 0; i < parts.length; i++) {
-        const route = `${content.route}/part-${String(i + 1).padStart(4, '0')}.txt`;
-        const next =
-          i + 1 < parts.length
-            ? `\n\n[Continue](${url(`${content.route}/part-${String(i + 2).padStart(4, '0')}.txt`)})\n`
-            : '';
-        write(route, parts[i] + next, 128 * 1024);
-        content.entries.set(`part:${i}`, { title: `${page.title} — part ${i + 1}`, route, description: page.meta.id });
-      }
+      const route = `${content.route}/content.txt`;
+      // Complete leaves preserve canonical Markdown bytes, including indivisible
+      // tables and fences. Navigation budgets apply only to discovery indexes.
+      write(route, body);
+      const size = bytes(body);
+      maxLeafBytes = Math.max(maxLeafBytes, size);
+      leaves.push({ id: page.meta.id, route, bytes: size, sha256: digest(body) });
+      content.entries.set('content', {
+        title: 'Complete Markdown',
+        route,
+        description: `${size} bytes; ${page.meta.id}`,
+      });
     }
   } finally {
     closeSync(bulkFd);
@@ -347,6 +344,9 @@ export function writeCanonicalHierarchy({ contentRoot, outputRoot, base = '/', t
     taxonomyDigest: digest(JSON.stringify(taxonomy)),
     corpusSha256,
     bulkBytes,
+    maxLeafBytes,
+    leafSizeLimit: null,
+    leaves,
     generatedFiles: generated.size,
     durationMs: Math.round(performance.now() - started),
     peakRssBytes: process.resourceUsage().maxRSS * 1024,
