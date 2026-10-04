@@ -376,3 +376,22 @@ describe('curated corpus presentation', () => {
     expect(getProgressivePaths(corpus.root)).toContainEqual({ path: 'docs-cloud-f5-com/guide', type: 'leaf' });
   });
 });
+
+describe('substantive hints', () => {
+  it('skips separator metadata and keeps a meaningful paragraph', () => {
+    const markdown =
+      '---\ntitle: Guide\ncategory: Guides\ndescription: "---"\n---\n\n# Guide\n\nPublished October 4, 2026\n\n---\n\n## Details\n\nConfigure application routing with these options.\n';
+    const manifest: ProgressiveCorpusManifest = {
+      schema_version: 2,
+      source_roots: { source: 'https://example.com' },
+      documents: [document('source', 'content/source/guide/index.md', markdown)],
+      assets: [],
+    };
+    const corpus = buildProgressiveCorpus(manifest, () => markdown, {
+      hints: { strategy: 'first-sentence', maxCharacters: 100 },
+    });
+    const output = renderProgressiveFullIndex(corpus, new URL('https://example.com/'));
+    expect(output).toContain('Configure application routing with these options.');
+    expect(output).not.toContain(': ---');
+  });
+});
