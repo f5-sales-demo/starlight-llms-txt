@@ -1,5 +1,13 @@
 # starlight-llms-txt
 
+## 2.3.2
+
+### Patch Changes
+
+- [#674](https://github.com/f5-sales-demo/starlight-llms-txt/pull/674) [`762ad92`](https://github.com/f5-sales-demo/starlight-llms-txt/commit/762ad9218daf911dfc4c009db982adb642a96635) Thanks [@robinmordasiewicz](https://github.com/robinmordasiewicz)! - # Curated corpus summaries
+  
+  Use readable source and topic labels and substantive retained prose in progressive corpus summaries. Keep canonical leaf routes stable and avoid repeated document titles.
+
 ## 2.3.1
 
 ### Patch Changes
