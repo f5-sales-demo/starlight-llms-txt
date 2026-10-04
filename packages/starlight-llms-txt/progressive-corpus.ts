@@ -154,15 +154,17 @@ function compactHint(
   }
   const cleanedDescription = plainText(description ?? '');
   const captureMetadata = /^(?:Published |Last (?:modified|updated) |Updated |Figure:)/i;
+  const meaningful = (value: string): boolean => /[\p{Letter}\p{Number}]/u.test(value);
   const prose = body
     .replace(/```[\s\S]*?```|~~~[\s\S]*?~~~/g, '')
     .split(/\n\s*\n/)
     .map((block) => block.trim())
     .filter((block) => block && !/^(?:#{1,6} |!\[|<|[-*+] |\d+\. |\||>)/.test(block))
     .map(plainText)
-    .find((block) => block && !captureMetadata.test(block));
+    .find((block) => meaningful(block) && !captureMetadata.test(block));
   const text =
-    (captureMetadata.test(cleanedDescription) ||
+    (!meaningful(cleanedDescription) ||
+    captureMetadata.test(cleanedDescription) ||
     (cleanedDescription.length >= 200 && !/[.!?]$/.test(cleanedDescription))
       ? prose
       : cleanedDescription) ||
