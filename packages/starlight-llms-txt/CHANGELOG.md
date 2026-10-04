@@ -1,5 +1,13 @@
 # starlight-llms-txt
 
+## 2.3.3
+
+### Patch Changes
+
+- [#677](https://github.com/f5-sales-demo/starlight-llms-txt/pull/677) [`6f43a5f`](https://github.com/f5-sales-demo/starlight-llms-txt/commit/6f43a5fb29bc4d471935e580e5ab203116560133) Thanks [@robinmordasiewicz](https://github.com/robinmordasiewicz)! - # Substantive document hints
+  
+  Reject separator-only descriptions and prefer retained prose for progressive document summaries.
+
 ## 2.3.2
 
 ### Patch Changes
