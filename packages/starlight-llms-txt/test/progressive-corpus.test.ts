@@ -366,7 +366,7 @@ describe('curated corpus presentation', () => {
     const leaf = renderProgressiveNode(corpus, 'docs-cloud-f5-com/guide', site, site);
     expect(root).toContain('Official Documentation');
     expect(source).toContain('# Official Documentation');
-    expect(source).toContain('Multi Cloud Network Connect');
+    expect(source).toContain('Multi-Cloud Network Connect');
     expect(full).toContain('## Official Documentation');
     expect(full).toContain('Configure secure connections between networks.');
     expect(full).not.toContain('Published');

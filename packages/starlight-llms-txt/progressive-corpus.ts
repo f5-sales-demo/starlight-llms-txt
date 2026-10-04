@@ -77,6 +77,13 @@ const readableNames: Record<string, string> = {
   'my-f5-com': 'MyF5 Knowledge',
   'community-f5-com': 'F5 Community Articles',
   'www-f5-com': 'F5 Product and Solution Pages',
+  'dns-management': 'DNS Management',
+  'multi-cloud-app-connect': 'Multi-Cloud App Connect',
+  'multi-cloud-network-connect': 'Multi-Cloud Network Connect',
+  'web-app-and-api-protection': 'Web App and API Protection',
+  'audit-logs-and-alerts': 'Audit Logs and Alerts',
+  'client-side-defense': 'Client-Side Defense',
+  'support-v2': 'Support',
   'how-to': 'How-to Guides',
   'how-tos': 'How-to Guides',
   'bigip-apm': 'BIG-IP Access Policy Manager',
@@ -93,7 +100,11 @@ function structuralTitle(value: string): string {
     value
       .split(/[-_]/)
       .filter(Boolean)
-      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .map((part) =>
+        /^(api|dns|tls|http|https|nginx|k8s|gpu|vpn|ce)$/i.test(part)
+          ? part.toUpperCase()
+          : part.charAt(0).toUpperCase() + part.slice(1),
+      )
       .join(' ')
   );
 }
@@ -151,7 +162,12 @@ function compactHint(
     .map(plainText)
     .find((block) => block && !captureMetadata.test(block));
   const text =
-    (captureMetadata.test(cleanedDescription) ? prose : cleanedDescription) || prose || structuralDescription(title);
+    (captureMetadata.test(cleanedDescription) ||
+    (cleanedDescription.length >= 200 && !/[.!?]$/.test(cleanedDescription))
+      ? prose
+      : cleanedDescription) ||
+    prose ||
+    structuralDescription(title);
   const sentence = text.match(/^.*?[.!?](?=\s|$)/)?.[0] ?? text;
   return truncateAtWord(sentence, options.maxCharacters);
 }
