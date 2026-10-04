@@ -7,6 +7,7 @@
   "type": "module",
   "exports": {
     ".": "./index.ts",
+    "./progressive-corpus": "./progressive-corpus.ts",
     "./canonical-corpus": "./canonical-corpus.mjs"
   },
   "files": [

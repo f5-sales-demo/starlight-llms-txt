@@ -276,7 +276,7 @@ describe('progressive corpus rendering', () => {
   it('renders llms-full.txt as a grouped link inventory without document content', () => {
     const { corpus } = fixture();
     const output = renderProgressiveFullIndex(corpus, new URL('https://example.com/html-to-markdown/'));
-    expect(output).toContain('## Docs Cloud F5 Com');
+    expect(output).toContain('## F5 Distributed Cloud Documentation');
     expect(output).toContain('/_llms-txt/docs-cloud-f5-com/guides/setup.txt');
     expect(output).toContain('Documentation for Setup.');
     expect(output).not.toContain('Support body.');
@@ -341,5 +341,38 @@ describe('progressive corpus rendering', () => {
       expect(full.match(new RegExp(`${leaf.path.replaceAll('/', '\\/')}\\.txt`, 'g'))).toHaveLength(1);
     }
     expect(renderProgressiveFullIndex(corpus, site)).toBe(full);
+  });
+});
+
+describe('curated corpus presentation', () => {
+  it('uses prose instead of capture dates and invisible text while keeping leaf routes stable', () => {
+    const markdown =
+      '---\ntitle: Guide\ncategory: multi-cloud-network-connect\ndescription: "\u200b Published April 5, 2023 | Last modified October 2, 2026"\n---\n\n\u200b\n\n# Guide\n\nPublished April 5, 2023 | Last modified October 2, 2026\n\n## Overview\n\nConfigure secure connections between networks. Additional detail.\n';
+    const manifest: ProgressiveCorpusManifest = {
+      schema_version: 2,
+      source_roots: { 'docs-cloud-f5-com': 'https://source.example' },
+      documents: [document('docs-cloud-f5-com', 'content/docs-cloud-f5-com/guide/index.md', markdown)],
+      assets: [],
+    };
+    const corpus = buildProgressiveCorpus(manifest, () => markdown, {
+      taxonomy: { levels: ['category', 'subcategory'] },
+      hints: { strategy: 'first-sentence', maxCharacters: 100 },
+      sources: { 'docs-cloud-f5-com': { title: 'Official Documentation', description: 'Verified product guides.' } },
+    });
+    const site = new URL('https://example.com/corpus/');
+    const root = renderProgressiveIndex(corpus, site);
+    const source = renderProgressiveNode(corpus, 'docs-cloud-f5-com', site, site);
+    const full = renderProgressiveFullIndex(corpus, site);
+    const leaf = renderProgressiveNode(corpus, 'docs-cloud-f5-com/guide', site, site);
+    expect(root).toContain('Official Documentation');
+    expect(source).toContain('# Official Documentation');
+    expect(source).toContain('Multi-Cloud Network Connect');
+    expect(full).toContain('## Official Documentation');
+    expect(full).toContain('Configure secure connections between networks.');
+    expect(full).not.toContain('Published');
+    expect(full).not.toContain('\u200b');
+    expect(leaf.match(/^# Guide$/gm)).toHaveLength(1);
+    expect(leaf).toContain('Published April 5, 2023');
+    expect(getProgressivePaths(corpus.root)).toContainEqual({ path: 'docs-cloud-f5-com/guide', type: 'leaf' });
   });
 });
