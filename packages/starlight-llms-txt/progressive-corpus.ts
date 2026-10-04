@@ -65,18 +65,37 @@ export interface ProgressiveCorpus {
   sources: string[];
   sourceRoots: Record<string, string>;
   assets: Set<string>;
+  sourceMetadata: Record<string, Required<ProgressiveSourceMetadata>>;
 }
 
 function compareText(a: string, b: string): number {
   return a < b ? -1 : a > b ? 1 : 0;
 }
 
+const readableNames: Record<string, string> = {
+  'docs-cloud-f5-com': 'F5 Distributed Cloud Documentation',
+  'my-f5-com': 'MyF5 Knowledge',
+  'community-f5-com': 'F5 Community Articles',
+  'www-f5-com': 'F5 Product and Solution Pages',
+  'how-to': 'How-to Guides',
+  'how-tos': 'How-to Guides',
+  'bigip-apm': 'BIG-IP Access Policy Manager',
+  'bigip-utilities': 'BIG-IP Utilities',
+  'ddos-and-transit-services': 'DDoS and Transit Services',
+  'nginx-one': 'NGINX One',
+  'ai-assistant': 'AI Assistant',
+  'volt-hw': 'Hardware',
+};
+
 function structuralTitle(value: string): string {
-  return value
-    .split(/[-_]/)
-    .filter(Boolean)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(' ');
+  return (
+    readableNames[value.toLowerCase()] ||
+    value
+      .split(/[-_]/)
+      .filter(Boolean)
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(' ')
+  );
 }
 
 function structuralDescription(title: string): string {
@@ -96,7 +115,8 @@ function taxonomySlug(value: string): string {
 
 function plainText(value: string): string {
   return value
-    .replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/[\u200B-\u200D\uFEFF]/g, '')
+    .replace(/!\[([^\]]*)\]\([^)]*\)/g, '')
     .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
     .replace(/<[^>]*>/g, ' ')
     .replace(/[`*_~>#]+/g, '')
@@ -115,12 +135,23 @@ function compactHint(
   description: string | undefined,
   title: string,
   options: ProgressiveCorpusHintOptions | undefined,
+  body: string,
 ): string | undefined {
   if (!options) return description?.trim() || undefined;
   if (options.strategy !== 'first-sentence' || !Number.isInteger(options.maxCharacters) || options.maxCharacters < 1) {
     throw new Error('progressive corpus hint configuration is invalid');
   }
-  const text = plainText(description ?? '') || structuralDescription(title);
+  const cleanedDescription = plainText(description ?? '');
+  const captureMetadata = /^(?:Published |Last (?:modified|updated) |Updated |Figure:)/i;
+  const prose = body
+    .replace(/```[\s\S]*?```|~~~[\s\S]*?~~~/g, '')
+    .split(/\n\s*\n/)
+    .map((block) => block.trim())
+    .filter((block) => block && !/^(?:#{1,6} |!\[|<|[-*+] |\d+\. |\||>)/.test(block))
+    .map(plainText)
+    .find((block) => block && !captureMetadata.test(block));
+  const text =
+    (captureMetadata.test(cleanedDescription) ? prose : cleanedDescription) || prose || structuralDescription(title);
   const sentence = text.match(/^.*?[.!?](?=\s|$)/)?.[0] ?? text;
   return truncateAtWord(sentence, options.maxCharacters);
 }
@@ -175,7 +206,7 @@ function parseDocument(
     typeof frontmatter.description === 'string' && frontmatter.description.trim()
       ? frontmatter.description.trim()
       : undefined;
-  const description = compactHint(rawDescription, title, hints);
+  const description = compactHint(rawDescription, title, hints, match[2] ?? '');
   const category = typeof frontmatter.category === 'string' ? frontmatter.category.trim() : '';
   const subcategory = typeof frontmatter.subcategory === 'string' ? frontmatter.subcategory.trim() : '';
   return {
@@ -225,7 +256,7 @@ function buildTaxonomyTree(entries: ProgressiveEntry[], options: ProgressiveCorp
       const categorySegment = taxonomySlug(categoryName);
       const categoryRoute = `${sourceId}/_taxonomy/${categorySegment}`;
       reserve(categoryRoute);
-      const category = directory(categoryRoute, categorySegment, categoryName);
+      const category = directory(categoryRoute, categorySegment, structuralTitle(categoryName));
       source.children.set(categorySegment, category);
       const categoryEntries = byCategory.get(categoryName) ?? [];
       const subcategoryCounts = new Map<string, number>();
@@ -241,7 +272,7 @@ function buildTaxonomyTree(entries: ProgressiveEntry[], options: ProgressiveCorp
         const subcategorySegment = taxonomySlug(subcategoryName);
         const subcategoryRoute = `${categoryRoute}/${subcategorySegment}`;
         reserve(subcategoryRoute);
-        const subcategory = directory(subcategoryRoute, subcategorySegment, subcategoryName);
+        const subcategory = directory(subcategoryRoute, subcategorySegment, structuralTitle(subcategoryName));
         category.children.set(`directory:${subcategorySegment}`, subcategory);
         materialized.set(subcategoryName, subcategory);
       }
@@ -258,7 +289,7 @@ function buildTaxonomyTree(entries: ProgressiveEntry[], options: ProgressiveCorp
 export function buildProgressiveCorpus(
   manifest: ProgressiveCorpusManifest,
   readDocument: (path: string) => string,
-  options: Pick<ProgressiveCorpusOptions, 'taxonomy' | 'hints'> = {},
+  options: Pick<ProgressiveCorpusOptions, 'taxonomy' | 'hints' | 'sources'> = {},
 ): ProgressiveCorpus {
   if (manifest.schema_version !== 2 || !Array.isArray(manifest.documents) || !Array.isArray(manifest.assets)) {
     throw new Error('progressive corpus manifest schema is invalid');
@@ -318,7 +349,22 @@ export function buildProgressiveCorpus(
     throw new Error('progressive corpus route collision');
   }
   const sources = [...new Set(entries.map((entry) => entry.corpus.sourceId))].sort(compareText);
-  return { root, sources, sourceRoots: { ...manifest.source_roots }, assets };
+  const sourceDetails = Object.fromEntries(sources.map((sourceId) => [sourceId, sourceMetadata(sourceId, options)]));
+  const describeDirectory = (node: DirectoryNode): number => {
+    let count = 0;
+    for (const child of node.children.values()) {
+      count += child.type === 'directory' ? describeDirectory(child) : 1;
+    }
+    if (sourceDetails[node.slug]) {
+      node.meta.title = sourceDetails[node.slug].title;
+      node.meta.description = sourceDetails[node.slug].description;
+    } else {
+      node.meta.description = `Browse ${count} ${count === 1 ? 'document' : 'documents'} about ${node.meta.title}.`;
+    }
+    return count;
+  };
+  describeDirectory(root);
+  return { root, sources, sourceRoots: { ...manifest.source_roots }, assets, sourceMetadata: sourceDetails };
 }
 
 export function loadProgressiveCorpus(options: ProgressiveCorpusOptions): ProgressiveCorpus {
@@ -379,7 +425,9 @@ export function renderProgressiveIndex(
   sections.push(
     corpus.sources
       .map((sourceId) => {
-        const metadata = sourceMetadata(sourceId, options);
+        const metadata = options.sources?.[sourceId]
+          ? sourceMetadata(sourceId, options)
+          : corpus.sourceMetadata[sourceId] || sourceMetadata(sourceId);
         return `- [${metadata.title}](${absoluteRoute(site, sourceId)}): ${metadata.description} Source: ${corpus.sourceRoots[sourceId]}`;
       })
       .join('\n'),
@@ -405,7 +453,7 @@ export function renderProgressiveFullIndex(corpus: ProgressiveCorpus, site: URL)
   const sections = ['# Complete Documentation Inventory'];
   const entries = leafEntries(corpus.root);
   for (const sourceId of corpus.sources) {
-    const metadata = sourceMetadata(sourceId);
+    const metadata = corpus.sourceMetadata[sourceId] || sourceMetadata(sourceId);
     const links = entries
       .filter(({ leaf }) => (leaf.entry as ProgressiveEntry).corpus.sourceId === sourceId)
       .map(({ route, leaf }) => {
@@ -462,7 +510,9 @@ export function renderProgressiveNode(
   const entry = node.entry as ProgressiveEntry;
   const body = rewriteCorpusAssetReferences(entry.corpus.body, entry.corpus.path, corpus.assets, assetBaseUrl);
   const sections: string[] = [];
-  if (!/^\s*#\s+/.test(body)) sections.push(`# ${node.meta.title}`);
+  // The stored body remains intact. Leading invisible characters do not create
+  // a second title in the generated leaf.
+  if (!/^[\s\u200B-\u200D\uFEFF]*#\s+/.test(body)) sections.push(`# ${node.meta.title}`);
   if (node.meta.description) sections.push(`> ${node.meta.description}`);
   sections.push(body);
   return `${sections.filter(Boolean).join('\n\n')}\n`;
