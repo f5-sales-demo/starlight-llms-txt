@@ -1,5 +1,13 @@
 # starlight-llms-txt
 
+## 2.4.0
+
+### Minor Changes
+
+- [#690](https://github.com/f5-sales-demo/starlight-llms-txt/pull/690) [`f8e54a4`](https://github.com/f5-sales-demo/starlight-llms-txt/commit/f8e54a4350e3d6b7d373c90eb257561d208eac59) Thanks [@robinmordasiewicz](https://github.com/robinmordasiewicz)! - # Verified corpus enrichment
+  
+  Serve verified corpus aliases at their existing routes while keeping search and inventories canonical. Preserve complete grounded descriptions from enrichment snapshots.
+
 ## 2.3.3
 
 ### Patch Changes
