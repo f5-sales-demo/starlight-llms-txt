@@ -1,6 +1,6 @@
 import { starlightLllmsTxtContext } from 'virtual:starlight-llms-txt/context';
 import type { APIRoute, GetStaticPaths, InferGetStaticParamsType } from 'astro';
-import { getProgressivePaths, loadProgressiveCorpus, renderProgressiveNode } from './progressive-corpus';
+import { getProgressiveRoutePaths, loadProgressiveCorpus, renderProgressiveNode } from './progressive-corpus';
 import { ensureTrailingSlash } from './utils';
 
 export const prerender = true;
@@ -10,7 +10,7 @@ if (!options) throw new Error('progressive corpus configuration is required');
 const corpus = loadProgressiveCorpus(options);
 
 export const getStaticPaths = (() =>
-  getProgressivePaths(corpus.root).map((entry) => ({ params: { path: entry.path } }))) satisfies GetStaticPaths;
+  getProgressiveRoutePaths(corpus).map((entry) => ({ params: { path: entry.path } }))) satisfies GetStaticPaths;
 
 type Params = InferGetStaticParamsType<typeof getStaticPaths>;
 
