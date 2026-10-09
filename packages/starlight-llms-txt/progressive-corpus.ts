@@ -25,6 +25,10 @@ export interface ProgressiveCorpusManifest {
   source_roots: Record<string, string>;
   documents: ProgressiveCorpusDocument[];
   assets: ProgressiveCorpusAsset[];
+  enrichment?: {
+    artifact_sha256: string;
+    aliases: Array<{ path: string; target: string; url: string }>;
+  };
   [key: string]: unknown;
 }
 
@@ -66,6 +70,7 @@ export interface ProgressiveCorpus {
   sourceRoots: Record<string, string>;
   assets: Set<string>;
   sourceMetadata: Record<string, Required<ProgressiveSourceMetadata>>;
+  aliases: Map<string, string>;
 }
 
 function compareText(a: string, b: string): number {
@@ -207,6 +212,7 @@ function parseDocument(
   markdown: string,
   routeId: string,
   hints?: ProgressiveCorpusHintOptions,
+  grounded = false,
 ): { title: string; description?: string; category?: string; subcategory?: string; body: string } {
   const match = markdown.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
   if (!match) throw new Error(`document has no YAML frontmatter: ${routeId}`);
@@ -224,7 +230,7 @@ function parseDocument(
     typeof frontmatter.description === 'string' && frontmatter.description.trim()
       ? frontmatter.description.trim()
       : undefined;
-  const description = compactHint(rawDescription, title, hints, match[2] ?? '');
+  const description = grounded ? rawDescription : compactHint(rawDescription, title, hints, match[2] ?? '');
   const category = typeof frontmatter.category === 'string' ? frontmatter.category.trim() : '';
   const subcategory = typeof frontmatter.subcategory === 'string' ? frontmatter.subcategory.trim() : '';
   return {
@@ -332,7 +338,7 @@ export function buildProgressiveCorpus(
     if (createHash('sha256').update(markdown).digest('hex') !== document.file_sha256) {
       throw new Error(`document digest mismatch: ${document.path}`);
     }
-    const parsed = parseDocument(markdown, routeId, options.hints);
+    const parsed = parseDocument(markdown, routeId, options.hints, !!manifest.enrichment);
     entries.push({
       id: routeId,
       data: {
@@ -366,6 +372,26 @@ export function buildProgressiveCorpus(
   if (leaves.length !== entries.length || new Set(routePaths).size !== routePaths.length) {
     throw new Error('progressive corpus route collision');
   }
+  const aliases = new Map<string, string>();
+  if (manifest.enrichment) {
+    if (!/^[0-9a-f]{64}$/.test(manifest.enrichment.artifact_sha256) || !Array.isArray(manifest.enrichment.aliases)) {
+      throw new Error('invalid pinned enrichment metadata');
+    }
+    for (const alias of manifest.enrichment.aliases) {
+      const sourceId = alias.path.split('/')[1] ?? '';
+      if (typeof manifest.source_roots[sourceId] !== 'string' || !documentPaths.has(alias.target)) {
+        throw new Error('alias source or canonical target is outside the corpus');
+      }
+      const targetDocument = manifest.documents.find((document) => document.path === alias.target);
+      if (!targetDocument) throw new Error('alias canonical target is missing');
+      const source = routeIdForDocument({ ...targetDocument, sourceId, path: alias.path });
+      const target = routeIdForDocument(targetDocument);
+      if (routePaths.includes(source) || aliases.has(source) || source === target) {
+        throw new Error('alias route collision');
+      }
+      aliases.set(source, target);
+    }
+  }
   const sources = [...new Set(entries.map((entry) => entry.corpus.sourceId))].sort(compareText);
   const sourceDetails = Object.fromEntries(sources.map((sourceId) => [sourceId, sourceMetadata(sourceId, options)]));
   const describeDirectory = (node: DirectoryNode): number => {
@@ -382,7 +408,7 @@ export function buildProgressiveCorpus(
     return count;
   };
   describeDirectory(root);
-  return { root, sources, sourceRoots: { ...manifest.source_roots }, assets, sourceMetadata: sourceDetails };
+  return { root, sources, sourceRoots: { ...manifest.source_roots }, assets, sourceMetadata: sourceDetails, aliases };
 }
 
 export function loadProgressiveCorpus(options: ProgressiveCorpusOptions): ProgressiveCorpus {
@@ -405,6 +431,13 @@ export function loadProgressiveCorpus(options: ProgressiveCorpusOptions): Progre
 
 export function getProgressivePaths(root: DirectoryNode): TierPath[] {
   return getAllTierPaths(root);
+}
+
+export function getProgressiveRoutePaths(corpus: ProgressiveCorpus): TierPath[] {
+  return [
+    ...getProgressivePaths(corpus.root),
+    ...[...corpus.aliases.keys()].sort(compareText).map((route) => ({ path: route, type: 'leaf' as const })),
+  ];
 }
 
 export function findProgressiveNode(root: DirectoryNode, routePath: string): DirectoryNode | LeafNode | undefined {
@@ -513,7 +546,8 @@ export function renderProgressiveNode(
   site: URL,
   assetBaseUrl: URL,
 ): string {
-  const node = findProgressiveNode(corpus.root, routePath);
+  const canonicalRoute = corpus.aliases.get(routePath) || routePath;
+  const node = findProgressiveNode(corpus.root, canonicalRoute);
   if (!node) throw new Error(`progressive corpus route not found: ${routePath}`);
   if (node.type === 'directory') {
     const description = node.meta.description || structuralDescription(node.meta.title);

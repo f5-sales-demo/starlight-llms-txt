@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildProgressiveCorpus,
   getProgressivePaths,
+  getProgressiveRoutePaths,
   type ProgressiveCorpusManifest,
   renderProgressiveFullIndex,
   renderProgressiveIndex,
@@ -81,6 +82,61 @@ const semanticFixture = () => {
 };
 
 describe('buildProgressiveCorpus', () => {
+  it('serves pinned alias routes without adding canonical inventory or search leaves', () => {
+    const markdown = '---\ntitle: Setup\ncategory: Guides\n---\n\nUseful procedure.\n';
+    const manifest: ProgressiveCorpusManifest = {
+      schema_version: 2,
+      source_roots: { source: 'https://source.example' },
+      documents: [document('source', 'content/source/setup/index.md', markdown)],
+      assets: [],
+      enrichment: {
+        artifact_sha256: 'a'.repeat(64),
+        aliases: [
+          {
+            path: 'content/source/old-setup/index.md',
+            target: 'content/source/setup/index.md',
+            url: 'https://source.example/old-setup',
+          },
+        ],
+      },
+    };
+    const corpus = buildProgressiveCorpus(manifest, () => markdown);
+    expect(getProgressivePaths(corpus.root).filter((entry) => entry.type === 'leaf')).toHaveLength(1);
+    expect(getProgressiveRoutePaths(corpus)).toContainEqual({ path: 'source/old-setup', type: 'leaf' });
+    const site = new URL('https://site.example/');
+    expect(renderProgressiveNode(corpus, 'source/old-setup', site, site)).toEqual(
+      renderProgressiveNode(corpus, 'source/setup', site, site),
+    );
+    expect(renderProgressiveFullIndex(corpus, site)).not.toContain('old-setup');
+    if (!manifest.enrichment?.aliases[0]) throw new Error('missing alias fixture');
+    manifest.enrichment.aliases[0].target = 'content/source/missing/index.md';
+    expect(() => buildProgressiveCorpus(manifest, () => markdown)).toThrow('canonical target');
+    if (!manifest.enrichment?.aliases[0]) throw new Error('missing alias fixture');
+    manifest.enrichment.aliases[0].target = 'content/source/setup/index.md';
+    manifest.enrichment.aliases[0].path = 'content/source/setup/index.md';
+    expect(() => buildProgressiveCorpus(manifest, () => markdown)).toThrow('collision');
+  });
+
+  it('preserves complete grounded descriptions with a pinned enrichment artifact', () => {
+    const text =
+      'Configure the application policy using the required namespace and permissions. Verify its status before sending traffic.';
+    const markdown = `---\ntitle: Guide\ncategory: Guides\ndescription: ${text}\n---\n\nArticle.\n`;
+    const manifest: ProgressiveCorpusManifest = {
+      schema_version: 2,
+      source_roots: { source: 'https://source.example' },
+      documents: [document('source', 'content/source/guide/index.md', markdown)],
+      assets: [],
+      enrichment: { artifact_sha256: 'a'.repeat(64), aliases: [] },
+    };
+    const corpus = buildProgressiveCorpus(manifest, () => markdown, {
+      hints: { strategy: 'first-sentence', maxCharacters: 20 },
+    });
+    expect(renderProgressiveFullIndex(corpus, new URL('https://site.example/'))).toContain(text);
+    if (!manifest.enrichment) throw new Error('missing enrichment fixture');
+    manifest.enrichment.artifact_sha256 = 'stale';
+    expect(() => buildProgressiveCorpus(manifest, () => markdown)).toThrow('pinned enrichment');
+  });
+
   it('groups by category and shared subcategory while preserving canonical leaf routes', () => {
     const { corpus } = semanticFixture();
     expect(getProgressivePaths(corpus.root)).toEqual([
