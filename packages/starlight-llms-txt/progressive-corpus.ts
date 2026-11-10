@@ -394,13 +394,23 @@ export function buildProgressiveCorpus(
   if (manifest.refresh?.schema_version === 2) {
     const selected = manifest.refresh.refreshed_sources;
     const inputs = manifest.refresh.source_inputs;
-    if (!Array.isArray(selected) || !inputs || !selected.length || new Set(selected).size !== selected.length ||
+    if (
+      !Array.isArray(selected) ||
+      !inputs ||
+      !selected.length ||
+      new Set(selected).size !== selected.length ||
       Object.keys(inputs).sort().join('\0') !== [...selected].sort().join('\0') ||
-      selected.some((source) => typeof manifest.source_roots[source] !== 'string')) {
+      selected.some((source) => typeof manifest.source_roots[source] !== 'string')
+    ) {
       throw new Error('invalid refreshed source inventory');
     }
     for (const input of Object.values(inputs)) {
-      if (!input || [input.admission_sha256, input.content_sha256, input.inventory_sha256].some((pin) => !/^[0-9a-f]{64}$/.test(pin))) {
+      if (
+        !input ||
+        [input.admission_sha256, input.content_sha256, input.inventory_sha256].some(
+          (pin) => !/^[0-9a-f]{64}$/.test(pin),
+        )
+      ) {
         throw new Error('invalid source admission pin');
       }
     }

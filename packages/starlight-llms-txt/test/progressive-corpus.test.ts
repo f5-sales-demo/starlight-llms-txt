@@ -84,15 +84,28 @@ const semanticFixture = () => {
 describe('buildProgressiveCorpus', () => {
   it('checks all composed refresh, enrichment, and source admission pins', () => {
     const markdown = '---\ntitle: Setup\ncategory: Guides\n---\n\nUseful procedure.\n';
-    const sourceInput = { admission_sha256: 'c'.repeat(64), content_sha256: 'd'.repeat(64), inventory_sha256: 'e'.repeat(64) };
+    const sourceInput = {
+      admission_sha256: 'c'.repeat(64),
+      content_sha256: 'd'.repeat(64),
+      inventory_sha256: 'e'.repeat(64),
+    };
     const manifest: ProgressiveCorpusManifest = {
-      schema_version: 2, source_roots: { source: 'https://source.example' },
-      documents: [document('source', 'content/source/setup/index.md', markdown)], assets: [], aliases: [],
-      refresh: { schema_version: 2, artifact_sha256: 'a'.repeat(64), refreshed_sources: ['source'], source_inputs: { source: sourceInput } },
+      schema_version: 2,
+      source_roots: { source: 'https://source.example' },
+      documents: [document('source', 'content/source/setup/index.md', markdown)],
+      assets: [],
+      aliases: [],
+      refresh: {
+        schema_version: 2,
+        artifact_sha256: 'a'.repeat(64),
+        refreshed_sources: ['source'],
+        source_inputs: { source: sourceInput },
+      },
       enrichment: { artifact_sha256: 'b'.repeat(64), aliases: [] },
     };
     buildProgressiveCorpus(manifest, () => markdown);
-    for (const entry of [manifest.refresh!, manifest.enrichment!]) {
+    if (!manifest.refresh || !manifest.enrichment) throw new Error('missing composed fixture');
+    for (const entry of [manifest.refresh, manifest.enrichment]) {
       const original = entry.artifact_sha256;
       entry.artifact_sha256 = 'stale';
       expect(() => buildProgressiveCorpus(manifest, () => markdown)).toThrow('pin');
@@ -101,7 +114,7 @@ describe('buildProgressiveCorpus', () => {
     sourceInput.admission_sha256 = 'stale';
     expect(() => buildProgressiveCorpus(manifest, () => markdown)).toThrow('pin');
     sourceInput.admission_sha256 = 'c'.repeat(64);
-    manifest.refresh!.refreshed_sources = ['not-in-corpus'];
+    manifest.refresh.refreshed_sources = ['not-in-corpus'];
     expect(() => buildProgressiveCorpus(manifest, () => markdown)).toThrow('source');
   });
 
