@@ -29,6 +29,11 @@ export interface ProgressiveCorpusManifest {
     artifact_sha256: string;
     aliases: Array<{ path: string; target: string; url: string }>;
   };
+  refresh?: {
+    artifact_sha256: string;
+    preserved_descriptions?: string[];
+  };
+  aliases?: Array<{ path: string; target: string; url: string }>;
   [key: string]: unknown;
 }
 
@@ -338,7 +343,12 @@ export function buildProgressiveCorpus(
     if (createHash('sha256').update(markdown).digest('hex') !== document.file_sha256) {
       throw new Error(`document digest mismatch: ${document.path}`);
     }
-    const parsed = parseDocument(markdown, routeId, options.hints, !!manifest.enrichment);
+    const parsed = parseDocument(
+      markdown,
+      routeId,
+      options.hints,
+      !!manifest.enrichment || !!manifest.refresh?.preserved_descriptions?.includes(document.path),
+    );
     entries.push({
       id: routeId,
       data: {
@@ -373,11 +383,21 @@ export function buildProgressiveCorpus(
     throw new Error('progressive corpus route collision');
   }
   const aliases = new Map<string, string>();
-  if (manifest.enrichment) {
-    if (!/^[0-9a-f]{64}$/.test(manifest.enrichment.artifact_sha256) || !Array.isArray(manifest.enrichment.aliases)) {
+  if (manifest.aliases && !manifest.refresh) throw new Error('aliases require a pinned refresh artifact');
+  const aliasMetadata = manifest.refresh ?? manifest.enrichment;
+  const aliasEntries = manifest.refresh ? manifest.aliases : manifest.enrichment?.aliases;
+  if (aliasMetadata) {
+    if (!/^[0-9a-f]{64}$/.test(aliasMetadata.artifact_sha256) || !Array.isArray(aliasEntries)) {
       throw new Error('invalid pinned enrichment metadata');
     }
-    for (const alias of manifest.enrichment.aliases) {
+    if (
+      manifest.refresh?.preserved_descriptions &&
+      (!Array.isArray(manifest.refresh.preserved_descriptions) ||
+        manifest.refresh.preserved_descriptions.some((entry) => !documentPaths.has(entry)))
+    ) {
+      throw new Error('preserved description is outside the refreshed corpus');
+    }
+    for (const alias of aliasEntries) {
       const sourceId = alias.path.split('/')[1] ?? '';
       if (typeof manifest.source_roots[sourceId] !== 'string' || !documentPaths.has(alias.target)) {
         throw new Error('alias source or canonical target is outside the corpus');

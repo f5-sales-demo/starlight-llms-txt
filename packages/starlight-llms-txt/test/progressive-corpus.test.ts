@@ -82,6 +82,38 @@ const semanticFixture = () => {
 };
 
 describe('buildProgressiveCorpus', () => {
+  it('supports pinned refresh aliases and preserved descriptions without stale inference', () => {
+    const text = 'Complete verified prerequisite. Keep the required permissions and conditions.';
+    const markdown = `---\ntitle: Setup\ncategory: Guides\ndescription: ${text}\n---\n\nUseful procedure.\n`;
+    const manifest: ProgressiveCorpusManifest = {
+      schema_version: 2,
+      source_roots: { source: 'https://source.example' },
+      documents: [document('source', 'content/source/setup/index.md', markdown)],
+      assets: [],
+      refresh: { artifact_sha256: 'a'.repeat(64), preserved_descriptions: ['content/source/setup/index.md'] },
+      aliases: [
+        {
+          path: 'content/source/old-setup/index.md',
+          target: 'content/source/setup/index.md',
+          url: 'https://source.example/old-setup',
+        },
+      ],
+    };
+    const corpus = buildProgressiveCorpus(manifest, () => markdown, {
+      hints: { strategy: 'first-sentence', maxCharacters: 20 },
+    });
+    expect(getProgressivePaths(corpus.root).filter((entry) => entry.type === 'leaf')).toHaveLength(1);
+    const site = new URL('https://site.example/');
+    expect(renderProgressiveNode(corpus, 'source/old-setup', site, site)).toEqual(
+      renderProgressiveNode(corpus, 'source/setup', site, site),
+    );
+    expect(renderProgressiveFullIndex(corpus, site)).toContain(text);
+    expect(renderProgressiveFullIndex(corpus, site)).not.toContain('old-setup');
+    if (!manifest.refresh) throw new Error('missing refresh fixture');
+    manifest.refresh.artifact_sha256 = 'stale';
+    expect(() => buildProgressiveCorpus(manifest, () => markdown)).toThrow('pinned enrichment');
+  });
+
   it('serves pinned alias routes without adding canonical inventory or search leaves', () => {
     const markdown = '---\ntitle: Setup\ncategory: Guides\n---\n\nUseful procedure.\n';
     const manifest: ProgressiveCorpusManifest = {
