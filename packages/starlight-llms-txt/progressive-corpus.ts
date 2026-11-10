@@ -343,8 +343,12 @@ export function buildProgressiveCorpus(
     if (createHash('sha256').update(markdown).digest('hex') !== document.file_sha256) {
       throw new Error(`document digest mismatch: ${document.path}`);
     }
-    const parsed = parseDocument(markdown, routeId, options.hints,
-      !!manifest.enrichment || !!manifest.refresh?.preserved_descriptions?.includes(document.path));
+    const parsed = parseDocument(
+      markdown,
+      routeId,
+      options.hints,
+      !!manifest.enrichment || !!manifest.refresh?.preserved_descriptions?.includes(document.path),
+    );
     entries.push({
       id: routeId,
       data: {
@@ -386,9 +390,11 @@ export function buildProgressiveCorpus(
     if (!/^[0-9a-f]{64}$/.test(aliasMetadata.artifact_sha256) || !Array.isArray(aliasEntries)) {
       throw new Error('invalid pinned enrichment metadata');
     }
-    if (manifest.refresh?.preserved_descriptions &&
+    if (
+      manifest.refresh?.preserved_descriptions &&
       (!Array.isArray(manifest.refresh.preserved_descriptions) ||
-        manifest.refresh.preserved_descriptions.some((entry) => !documentPaths.has(entry)))) {
+        manifest.refresh.preserved_descriptions.some((entry) => !documentPaths.has(entry)))
+    ) {
       throw new Error('preserved description is outside the refreshed corpus');
     }
     for (const alias of aliasEntries) {
