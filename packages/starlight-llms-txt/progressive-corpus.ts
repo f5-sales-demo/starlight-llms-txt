@@ -32,6 +32,9 @@ export interface ProgressiveCorpusManifest {
   refresh?: {
     artifact_sha256: string;
     preserved_descriptions?: string[];
+    schema_version?: number;
+    refreshed_sources?: string[];
+    source_inputs?: Record<string, { admission_sha256: string; content_sha256: string; inventory_sha256: string }>;
   };
   aliases?: Array<{ path: string; target: string; url: string }>;
   [key: string]: unknown;
@@ -383,6 +386,35 @@ export function buildProgressiveCorpus(
     throw new Error('progressive corpus route collision');
   }
   const aliases = new Map<string, string>();
+  for (const evidence of [manifest.refresh, manifest.enrichment]) {
+    if (evidence && !/^[0-9a-f]{64}$/.test(evidence.artifact_sha256)) {
+      throw new Error('invalid pinned enrichment metadata');
+    }
+  }
+  if (manifest.refresh?.schema_version === 2) {
+    const selected = manifest.refresh.refreshed_sources;
+    const inputs = manifest.refresh.source_inputs;
+    if (
+      !Array.isArray(selected) ||
+      !inputs ||
+      !selected.length ||
+      new Set(selected).size !== selected.length ||
+      Object.keys(inputs).sort().join('\0') !== [...selected].sort().join('\0') ||
+      selected.some((source) => typeof manifest.source_roots[source] !== 'string')
+    ) {
+      throw new Error('invalid refreshed source inventory');
+    }
+    for (const input of Object.values(inputs)) {
+      if (
+        !input ||
+        [input.admission_sha256, input.content_sha256, input.inventory_sha256].some(
+          (pin) => !/^[0-9a-f]{64}$/.test(pin),
+        )
+      ) {
+        throw new Error('invalid source admission pin');
+      }
+    }
+  }
   if (manifest.aliases && !manifest.refresh) throw new Error('aliases require a pinned refresh artifact');
   const aliasMetadata = manifest.refresh ?? manifest.enrichment;
   const aliasEntries = manifest.refresh ? manifest.aliases : manifest.enrichment?.aliases;
