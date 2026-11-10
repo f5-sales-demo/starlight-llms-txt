@@ -1,5 +1,13 @@
 # starlight-llms-txt
 
+## 2.4.1
+
+### Patch Changes
+
+- [#715](https://github.com/f5-sales-demo/starlight-llms-txt/pull/715) [`0e02361`](https://github.com/f5-sales-demo/starlight-llms-txt/commit/0e023612803bdf407e26ef08ff55f1dfc8dc9f8a) Thanks [@robinmordasiewicz](https://github.com/robinmordasiewicz)! - # Receipt-pinned source refresh
+  
+  Support receipt-pinned source refresh snapshots, preserve historical aliases outside canonical search, and keep verified descriptions for inherited articles.
+
 ## 2.4.0
 
 ### Minor Changes
