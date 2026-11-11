@@ -1,5 +1,13 @@
 # starlight-llms-txt
 
+## 2.5.0
+
+### Minor Changes
+
+- [#718](https://github.com/f5-sales-demo/starlight-llms-txt/pull/718) [`4bac455`](https://github.com/f5-sales-demo/starlight-llms-txt/commit/4bac4551f9090f52ad6377951294b2b6d015cc13) Thanks [@robinmordasiewicz](https://github.com/robinmordasiewicz)! - <!-- markdownlint-disable MD041 -->
+  
+  Validate every refresh, enrichment, and selected source admission pin in composed snapshots while preserving canonical search leaves, aliases, and complete descriptions.
+
 ## 2.4.1
 
 ### Patch Changes
