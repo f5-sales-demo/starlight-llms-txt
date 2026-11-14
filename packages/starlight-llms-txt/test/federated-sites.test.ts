@@ -57,7 +57,7 @@ describe('renderFederatedSites', () => {
       },
       {
         label: 'CSD',
-        url: 'https://f5-sales-demo.github.io/csd/llms.txt',
+        url: 'https://f5-sales-demo.github.io/client-side-defense/llms.txt',
         description: 'Client-side defense',
       },
     ]);
